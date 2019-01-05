@@ -1,4 +1,5 @@
 #include <cstring>
+#include "t2sort.h"
 
 using namespace std;
 
@@ -9,8 +10,8 @@ using namespace std;
  * */
 class T2Map {
     private:
-        int    size;
-        char * swap;
+        int     size;
+        char  * swap;
     public:
         T2Map(int);
         ~T2Map(void);
