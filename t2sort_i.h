@@ -1,3 +1,5 @@
+#include <cstring>
+
 using namespace std;
 
 //T2sort, seismic sort, write in c++, make c,python wrapper!

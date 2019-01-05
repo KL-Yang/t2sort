@@ -1,14 +1,11 @@
 /**
- * T2Map: map data according to presorted keys
- *
- * seems no need to make it a class, over kill, anyway, just for excerse
+ * T2Map: map data according to order determined by presorted keys
  * */
 #include "t2sort_i.h"
-#include <cstring>
 
 /**
- * @brief map data according to pre-sorted keys
- * @param size : unit length of data being mapped
+ * @brief Initiate the map with size in Byte and temporal storage
+ * @param size : unit length of data being mapped in Byte
  * */
 T2Map::T2Map(int size)
 {
@@ -22,33 +19,31 @@ T2Map::~T2Map()
 }
 
 /**
- * Note: no need for the from/to buffer as in old implementation
- * just use a single map! 
- * in place mapping p to p according to m, where there are n items in total
- * in place map makes it difficult, out of place map make this really easy
+ * @brief In place map p according to m, use only one extra memory
+ * @param n : total items in buffer
+ * @param p : pointer of items being mapped
  * @param m : from where map into target
  * */
 void T2Map::map(int n, char **p, int *m)
 {
-    for(register int i=0; i<n; )
-    {
-        while(i<n && m[i]==i)  //find next out of order item
+    for(register int i=0; i<n; /*no action*/ ) {
+        while(i<n && m[i]==i)
             i++;
 
         if(i==n)
             break;
 
-        memcpy(this->swap, p[i], this->size); //backup to swap
+        memcpy(this->swap, p[i], this->size);
 
         for(register int j=i, src=m[j]; j!=src; src=m[j])
             if(src<=i) {
                 memcpy(p[j], this->swap, this->size);   //must be in swap
-                m[j] = j;   //mark item done
-                break;      //restart the link
+                m[j] = j;
+                break;
             } else {
                 memcpy(p[j], p[src], this->size);
-                m[j] = j;   //mark item done
-                j = src;    //follow the source
+                m[j] = j;
+                j = src;
             }
     }
 }
