@@ -11,3 +11,5 @@ to sort trace flow in arbitrary order to another arbitrary order on single commo
 
 Assume sequential I/O of second level buffer is much faster than random I/O.
 The algorithm try to maximum second level buffer (disk) I/O bandwidth.
+
+Will use io_submit(2), fallocate(2), FALLOC_FL_PUNCH_HOLE, O_DIRECT(see open(2)).
