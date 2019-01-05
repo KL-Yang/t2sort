@@ -85,25 +85,37 @@ int main(int argc, char *argv[])
     oop_map(nkey, size, pp0, map, pp1);
 
     if(is_in_order(trc1, nkey, size)==0) {
-        printf("Not in order!\n");
+        printf("OOP: Not in order!\n");
         for(int i=0; i<nkey; i++) {
             t2key_t *x = (t2key_t*)(trc1+i*size);
             printf("[%4d] key=%4d seq=%4d\n", i, x->key, x->seq);
         }
     } else {
-        printf("In order!\n");
+        printf("OOP: In order!\n");
     }
-    /*
-    void **x = new void * [nkey];
-    void **y = new void * [nkey];
-    for(int i=0; i<nkey; i++) {
-        x[i] = (void*)(keyx+i*size);
-        y[i] = (void*)(keyy+i*size);
-    }
-    oop_map(nkey, size, x, map, y);
-    */
 
-    //Add code to verify the mapping!
+    //test the inplace map
+    int *trc2 = new int [nkey*size];
+    char **pp = new char*[nkey];
+    memcpy(trc2, trc0, sizeof(int)*size*nkey);
+    for(int i=0; i<nkey; i++)
+        pp[i] = (char*)(trc2+i*size);
+
+    T2Map zmap = T2Map(size*sizeof(int));
+    zmap.map(nkey, pp, map);
+
+    if(is_in_order(trc2, nkey, size)==0) {
+        printf("IPM: Not in order!\n");
+        for(int i=0; i<nkey; i++) {
+            t2key_t *x = (t2key_t*)(trc2+i*size);
+            printf("[%4d] key=%4d seq=%4d\n", i, x->key, x->seq);
+        }
+    } else {
+        printf("IPM: In order!\n");
+    }
+
+    delete[] pp;
+    delete[] trc2;
 
     delete[] pp0;
     delete[] pp1;
