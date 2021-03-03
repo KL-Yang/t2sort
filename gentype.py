@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import sys
 ##########################################################
 # Support maximum 3 key all togather, template functions
 ##########################################################
@@ -85,13 +85,11 @@ static void dbg_{t1}_{t2}_{t3}(int *t) {{
 
 # if order changes, call dbg to verify
 types = ["int32_t", "float", "int64_t", "double"]
-print("#include <stdio.h>")
-print("#include <stdint.h>")
-print("#include <stdlib.h>")
-print("enum {")
+print("//Auto generated file, do not edit!")
+print("\nenum {")
 for t1 in types:
     print("T2SORT_%s"%t1.upper(),',')   
-print("T2SORT_NTYPE };")    #number of types
+print("T2SORT_NTYPE };\n")      #number of types
 
 for t1 in types:
     print(type1_str.format(t1=t1))
@@ -126,7 +124,10 @@ for t1 in types:
         print()
 print("};\n")
 
-##############################debug-functions##################
+if len(sys.argv)<=1 or sys.argv[1]!="debug":
+    sys.exit(0)
+############################ debug-functions ##############################
+
 for t1 in types:
     print(type1_dbg.format(t1=t1, T1=t1.upper()))
     for t2 in types:
