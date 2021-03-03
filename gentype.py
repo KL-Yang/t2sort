@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 
 ##########################################################
-# Support maximum 3 key at once, template strings
-#
-#  t2sort_getkey(id, trace, n, key)
-# we assemble an instance like segy trace, with header and
-#   trace altogether, 
+# Support maximum 3 key all togather, template functions
 ##########################################################
 type1_str = "typedef struct {{ {t1}  key1; }} t2sort_{t1}_t;"
 type2_str = "typedef struct {{ {t1}  key1; {t2} key2; }} t2sort_{t1}_{t2}_t;"
@@ -66,25 +62,32 @@ static void cpy_{t1}_{t2}_{t3}(const void *p, int *ib, void *pk) {{
 #debug function to cross check and validate helper functions
 type1_dbg = """
 static void dbg_{t1}(int *t) {{
-    printf("%s: type[%d]={t1}\\n", __func__, t[0]);
-}}
+    if(T2SORT_{T1}!=t[0]) {{
+        printf("%s-error: type[%d]={t1}\\n", __func__, t[0]);
+        abort();
+}} }}
 """
 type2_dbg = """
 static void dbg_{t1}_{t2}(int *t) {{
-    printf("%s: type[%d]={t1} type[%d]={t2}\\n", __func__, t[0], t[1]);
-}}
+    if(T2SORT_{T1}!=t[0] || T2SORT_{T2}!=t[1]) {{
+        printf("%s-error: type[%d]={t1} type[%d]={t2}\\n", __func__, t[0], t[1]);
+    abort();
+}} }}
 """
 type3_dbg = """
 static void dbg_{t1}_{t2}_{t3}(int *t) {{
-    printf("%s: type[%d]={t1}, type[%d]={t2}, type[%d]={t3}\\n",
-        __func__, t[0], t[1], t[3]);
-}}
+    if(T2SORT_{T1}!=t[0] || T2SORT_{T2}!=t[1] ||T2SORT_{T3}!=t[2]) {{
+        printf("%s-error: type[%d]={t1}, type[%d]={t2}, type[%d]={t3}\\n",
+            __func__, t[0], t[1], t[3]);
+        abort();
+}} }}
 """
 
 # if order changes, call dbg to verify
 types = ["int32_t", "float", "int64_t", "double"]
 print("#include <stdio.h>")
 print("#include <stdint.h>")
+print("#include <stdlib.h>")
 print("enum {")
 for t1 in types:
     print("T2SORT_%s"%t1.upper(),',')   
@@ -125,11 +128,11 @@ print("};\n")
 
 ##############################debug-functions##################
 for t1 in types:
-    print(type1_dbg.format(t1=t1))
+    print(type1_dbg.format(t1=t1, T1=t1.upper()))
     for t2 in types:
-        print(type2_dbg.format(t1=t1, t2=t2))
+        print(type2_dbg.format(t1=t1, t2=t2, T1=t1.upper(), T2=t2.upper()))
         for t3 in types:
-            print(type3_dbg.format(t1=t1, t2=t2, t3=t3))
+            print(type3_dbg.format(t1=t1, t2=t2, t3=t3, T1=t1.upper(), T2=t2.upper(), T3=t3.upper()))
 
 print("static void (*dbg_funcs[4+16+64])(int*) = {")
 for t1 in types:
