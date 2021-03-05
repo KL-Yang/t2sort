@@ -86,11 +86,19 @@ static void dbg_{t1}_{t2}_{t3}(int *t) {{
 # if order changes, call dbg to verify
 types = ["int32_t", "float", "int64_t", "double"]
 print("//Auto generated file, do not edit!")
-print("\nenum {")
-for t1 in types:
-    print("T2SORT_%s"%t1.upper(),',')   
-print("T2SORT_NTYPE };\n")      #number of types
 
+if len(sys.argv)>1 and sys.argv[1]=="header":
+    print("#ifndef H_GENTYPE_PY_GEN")
+    print("#define H_GENTYPE_PY_GEN")
+    print("\nenum {")
+    for t1 in types:
+        print("T2SORT_%s"%t1.upper(),',')   
+    print("T2SORT_NTYPE };\n")      #number of types
+    print("#endif")
+    sys.exit(0)
+
+print("#ifndef C_GENTYPE_PY_GEN")
+print("#define C_GENTYPE_PY_GEN")
 for t1 in types:
     print(type1_str.format(t1=t1))
     print(type1_cmp.format(t1=t1))
@@ -123,11 +131,14 @@ for t1 in types:
             print("cpy_{t1}_{t2}_{t3}, ".format(t1=t1, t2=t2, t3=t3), end='')
         print()
 print("};\n")
+print("#endif")
 
 if len(sys.argv)<=1 or sys.argv[1]!="debug":
     sys.exit(0)
 ############################ debug-functions ##############################
 
+print("#ifndef C_DEBUG_GENTYPE_PY_GEN")
+print("#define C_DEBUG_GENTYPE_PY_GEN")
 for t1 in types:
     print(type1_dbg.format(t1=t1, T1=t1.upper()))
     for t2 in types:
@@ -144,3 +155,4 @@ for t1 in types:
             print("dbg_{t1}_{t2}_{t3}, ".format(t1=t1, t2=t2, t3=t3), end='\n')
         print()
 print("};\n")
+print("#endif")

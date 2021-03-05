@@ -1,3 +1,14 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+#include <stdarg.h>
+#include <string.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "t2sort.h"
 
 #ifdef __cplusplus
@@ -89,6 +100,8 @@ typedef struct t2sort_struct {
     int                 bsize;      //user given buffer size
     int                 flag;
 //////////////////////////////////////////////
+    int                 npile;
+    int                 wpntr;      //ntr capacity of write pile
     int         buff_size;
     pile_t    * pile;
     void      *_base;

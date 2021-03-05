@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <stdarg.h>
-
 #include "gentype_gen.h"
+#include "gentype_gen.c"
 
 /**
  * @brief get the index of compare and copy key function pointer
