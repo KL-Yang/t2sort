@@ -36,14 +36,14 @@ static int cmp_{t1}_{t2}_{t3}(const void *p1, const void *p2) {{
 }}
 """
 type1_cpy = """
-static void cpy_{t1}(const void *p, int *ib, void *pk) {{
+static void cpy_{t1}(const void *p, const int *ib, void *pk) {{
     {t1} * k1 = ({t1} *)(p+ib[0]);
     t2sort_{t1}_t *k = pk;
     k->key1 = *k1;
 }}
 """
 type2_cpy = """
-static void cpy_{t1}_{t2}(const void *p, int *ib, void *pk) {{
+static void cpy_{t1}_{t2}(const void *p, const int *ib, void *pk) {{
     {t1} * k1 = ({t1} *)(p+ib[0]);
     {t2} * k2 = ({t2} *)(p+ib[1]);
     t2sort_{t1}_{t2}_t *k = pk;
@@ -51,7 +51,7 @@ static void cpy_{t1}_{t2}(const void *p, int *ib, void *pk) {{
 }}
 """
 type3_cpy = """
-static void cpy_{t1}_{t2}_{t3}(const void *p, int *ib, void *pk) {{
+static void cpy_{t1}_{t2}_{t3}(const void *p, const int *ib, void *pk) {{
     {t1} * k1 = ({t1} *)(p+ib[0]);
     {t2} * k2 = ({t2} *)(p+ib[1]);
     {t3} * k3 = ({t3} *)(p+ib[2]);
@@ -114,7 +114,7 @@ for t1 in types:
         print()
 print("};\n")
 
-print("static void (*cpy_funcs[4+16+64])(const void*,int*,void*) = {")
+print("static void (*cpy_funcs[4+16+64])(const void*,const int*,void*) = {")
 for t1 in types:
     print("cpy_{t1}, ".format(t1=t1), end='')
     for t2 in types:
