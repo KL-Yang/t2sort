@@ -14,9 +14,10 @@ Which means the I/O bandwidth is relatively large but the IOPS is limited.
 The algorithm try to maximum the utilization of second level buffer (disk) I/O bandwidth,
 and minimize the number of I/O operation.
 
-This is very true for Mechanical Hard Disk Drive. While SSD has much better IOPS compares to HDD.
-However, for TLC and QLC SSD, sustained random 4K read speed is still one tenth to one third of sequential read.
-And sustained 4K random write speed is about one half to one quarter of sequential write.
+This is very true for Mechanical Hard Disk Drive, especially those with SMR technology. 
+While SSD has much better IOPS compares to HDD.
+However, for TLC/QLC SSD, sustained random 4K read speed is still one tenth to one third of sequential.
+And sustained 4K random write speed is about one half to one quarter of sequential.
 Still leaves space for optimal sorting algorithm.
 DIO and io_uring may still greatly reduce the CPU cost of sorting.
 
