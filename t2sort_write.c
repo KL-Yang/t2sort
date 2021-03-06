@@ -1,4 +1,10 @@
+#ifndef C_T2SORT_WRITE_T2SORT
+#define C_T2SORT_WRITE_T2SORT
 
+void * t2sort_writeraw(t2sort_h h, int *ntr)
+{
+    return NULL;
+}
 /**
  *
  * dump
@@ -13,3 +19,19 @@
  * each sorted block may be read at most once, but may be split
  * if have to across pile.
  * */
+int t2sort_write(t2sort_h h, const void *p, int ntr)
+{
+    int left=ntr, nput;
+    void *praw; const void *psrc = p;
+    while(left>0) {
+        nput = left;
+        praw = t2sort_writeraw(h, &nput);
+        assert(nput>0);
+        memcpy(praw, psrc, h->trlen*nput);
+        left -= nput;
+        psrc += nput*h->trlen;
+    };
+    return (ntr-left);
+}
+
+#endif

@@ -56,6 +56,15 @@ t2sort_h
 t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys, int bsize, int wioq, int flag);
 
 /**
+ * @brief zero copy write io, exposed internal buffer
+ * @param h   : sorter handle
+ * @param ntr : [IO] number of trace expected and actually exposed
+ * return exposed buffer, which is only guarantee valid till next write/writeraw.
+ * user is expect to write the buff for ntr traces.
+ * exposed ntr must be less or equal to expected.
+ * */
+void * t2sort_writeraw(t2sort_h h, int *ntr);
+/**
  * @brief write or partial write data into the sorter
  * @param p   : buffer of data to be write
  * @param ntr : number of trace to write
@@ -80,8 +89,10 @@ int t2sort_read(t2sort_h h, void *p, int ntr);
  * @param h   : sorter handle
  * @param ntr : [IO] number of trace expected and actually exposed
  * return exposed buffer, which is only guarantee valid till next read/readraw.
+ * user is expect to read from the buff for ntr traces.
+ * exposed ntr must be less or equal to expected.
  * */
-void * t2sort_readraw(t2sort_h h, int *ntr);
+const void * t2sort_readraw(t2sort_h h, int *ntr);
 
 /**
  * @brief release all the resources
