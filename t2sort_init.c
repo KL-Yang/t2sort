@@ -1,38 +1,21 @@
 
 #define PAGE_SIZE 4096
-/**
- * pile size aligned at Page size (4K)
- * */
-int t2sort_pilesize(int bsize, int trlen, int wioq)
-{
-    size_t p_ntr, psize;    //number of trace per pile
-    p_ntr = floor((bsize*1024L*1024L)/((wioq+1.0f)*trlen));
-    psize = PAGE_SIZE*(floor(p_ntr*trlen/PAGE_SIZE)+2);
-    return psize;
-}
 
-int t2sort_pile_alloc(t2sort_t *h, int bsize, int trlen, int wioq)
+int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
-    h->npile = wioq+1;
-    h->pile  = aligned_alloc(PAGE_SIZE, h->npile*sizeof(pile_t));
-    memset(h->pile, 0, h->npile*sizeof(pile_t));
-
     int pilesize;
-    h->wpntr = floor((bsize*1024L*1024L)/(h->npile*trlen));
+    h->wpntr = floor((bsize*1024L*1024L)/((wioq+1)*trlen));
     pilesize = PAGE_SIZE*(floor(h->wpntr*trlen/PAGE_SIZE)+2);
-    h->_base = malloc(pilesize*h->npile);
+    h->_base = malloc(pilesize*(wioq+1));
 
-    //AIO write use p_disk, write d_size bytes
-    //data copy @ p and write pntr*trlen bytes
-    /*
-    h->pile[0].p_disk = h->pile[0].p = h->_base;
-    h->pile[0].rbyte  = h->wpntr*h->trlen%PAGE_SIZE;
-    h->pile[0].d_size = h->wpntr*h->trlen-h->pile[0].rbyte;
-    for(int i=1; i<h->npile; i++) {
-        h->pile[i].p_disk = h->pile[i-1].p_disk+pilesize;
-        h->pile[i].p = h->pile[i].p_disk+h->pile[i-1].rbyte;
-        h->pile[i].rbyte = 0;
-    } */
+    //make write pile as double linked list
+    h->pile = calloc(wioq+1, sizeof(pile_t));
+    for(int i=0; i<wioq+1; i++) {
+        h->pile[i].pid  = i;
+        h->pile[i].next = &h->pile[(i+1)%(wioq+1)];
+        h->pile[i].prev = &h->pile[(i+wioq)%(wioq+1)];
+        h->pile[i].base = h->_base+i*pilesize;
+    }
     return 0;
 }
 
@@ -62,6 +45,6 @@ t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys,
     h->wioq  = wioq;
     h->flag  = flag;
     t2sort_init_scratch(h);
-    //t2sort_init_wpile();
+    t2sort_init_wpile(h, bsize, trlen, wioq);
     return (t2sort_h)h;
 }

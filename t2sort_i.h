@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <aio.h>
 
 #include "t2sort.h"
 
@@ -69,6 +70,10 @@ class zkey {
 };
 #endif
 
+typedef struct t2sort_aio_struct {
+    struct aiocb    paio;
+} t2sort_aio_t;
+
 //pile: use shifted buffer for DIO
 //  pile align at 4K : must
 //  pile align trace : must for in memory sort.
@@ -83,16 +88,21 @@ class zkey {
 //p3->_base begin@4K with nptr, pad end@4k
 //  ->p=_base+r1*2
 //
-typedef struct {
-    void   *dump;      //dump trace address
-    //these two used for DIO/AIO write to disk!
-    //sequential write seek location 
-    void       *p_disk;     //disk align address
-    size_t      d_size;     //disk data size
-    int     ntr;
-    int     rbyte;     //residual of this pile
-    //shift between disk and dump copy to previous pile for write
-} pile_t;
+typedef struct pile_struct_t pile_t;
+struct pile_struct_t {
+    void          * base;   //disk operation base
+    void          * p;      //memory operation base
+    int             ntr;    //number of trace in pile
+    int             status; //pile status
+    int             ri;     //residual of this pile
+    //some aio context should be kept here!
+    int             bpid;   //block pid
+    t2sort_aio_t    cb;
+//////////////////////////////////////////////////
+    int         pid;    //pile id
+    pile_t    * prev;
+    pile_t    * next;
+};
 
 typedef struct t2sort_struct {
     int                 fd;         //data file
@@ -104,10 +114,14 @@ typedef struct t2sort_struct {
     int                 bsize;      //user given buffer size
     int                 flag;
 //////////////////////////////////////////////
-    int                 npile;
+    int                 wpile;      //how many pile processed
+    int                 winst;      //how many instance write
     int                 wpntr;      //ntr capacity of write pile
+    pile_t            * pile;
+//    int                 iwp;        //current operating pile
+//////////////////////////////////////////////
+
     int         buff_size;
-    pile_t    * pile;
     void      *_base;
 } t2sort_t;
 
