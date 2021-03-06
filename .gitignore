@@ -32,3 +32,5 @@
 *.app
 
 *.swp
+*_del_*
+delete_*

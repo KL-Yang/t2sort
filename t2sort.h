@@ -1,3 +1,6 @@
+#ifndef H_T2SORT_T2SORT
+#define H_T2SORT_T2SORT
+
 #ifdef __cplusplus
 /**
  * Public API, the rest will be hidden private API
@@ -53,17 +56,20 @@ t2sort_h
 t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys, int bsize, int wioq, int flag);
 
 /**
- * @brief Dump or partial dump data into the sorter
- * @param p 
- * @param ntr : number of 
- * return the actual number of trace dumpped into the sorter
+ * @brief write or partial write data into the sorter
+ * @param p   : buffer of data to be write
+ * @param ntr : number of trace to write
+ * return the actual number of trace written into the sorter
+ * partial write will expect further call to wirte the rest
  * */
-int t2sort_dump(t2sort_h h, const void *p, int ntr);
+int t2sort_write(t2sort_h h, const void *p, int ntr);
 /**
- * Sort if not sorted, otherwise reset of read queue
- * without reset, read/readraw can only sequentially read out once
+ *   Reset the sort data flow, which is sort everything if not 
+ * sorted to prepare for read, otherwise reset the read queue.
+ * Without reset, read/readraw can only sequentially read out 
+ * once, with reset, can read again start from beginning.
  * */
-int t2sort_sort(t2sort_h h);
+int t2sort_reset(t2sort_h h);
 /**
  * Read or partial read data from the sorter
  * return the actually read number of trace
@@ -81,3 +87,4 @@ void * t2sort_readraw(t2sort_h h, int *ntr);
  * @brief release all the resources
  * */
 int t2sort_destroy(t2sort_h h);
+#endif

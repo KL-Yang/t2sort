@@ -43,7 +43,7 @@ static void
 t2sort_init_scratch(t2sort_t *h)
 {
     char scratchname[]="delete_XXXXXX";
-    mktemp(scratchname);
+    mkstemp(scratchname);
     printf("%s: open scratch (%s)\n", __func__, scratchname);
     h->fd = open(scratchname, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);

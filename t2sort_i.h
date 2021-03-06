@@ -1,9 +1,13 @@
+#ifndef H_I_T2SORT_T2SORT
+#define H_I_T2SORT_T2SORT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -107,4 +111,4 @@ typedef struct t2sort_struct {
     void      *_base;
 } t2sort_t;
 
-
+#endif
