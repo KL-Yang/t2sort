@@ -94,6 +94,10 @@ if len(sys.argv)>1 and sys.argv[1]=="header":
     for t1 in types:
         print("T2SORT_%s"%t1.upper(),',')   
     print("T2SORT_NTYPE };\n")      #number of types
+    print("int t2sort_type_size[] = {")
+    for t1 in types:
+        print("sizeof(%s),"%t1)
+    print("};")
     print("#endif")
     sys.exit(0)
 
