@@ -38,7 +38,7 @@ static int
 //return the key extraction function
 static void 
 (*t2sort_getcpy(int nkey, const t2sort_key_def_t *keys))
-    (const void**,int,const int*,void*)
+    (const void*,int,int,const int*,void*)
 {
     int index = t2sort_get_func_index(nkey, keys);
     return cpy_funcs[index];
