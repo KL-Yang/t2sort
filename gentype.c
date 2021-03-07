@@ -40,7 +40,7 @@ static int (*t2sort_getcmp(int num, ...))(const void*,const void*)
 }
 
 //return the key extraction function
-static void (*t2sort_getcpy(int num, ...))(const void*,const int*,void*)
+static void (*t2sort_getcpy(int num, ...))(const void**,int,const int*,void*)
 {
     int t[3];
     va_list valist;
