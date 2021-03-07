@@ -3,52 +3,43 @@
 
 /**
  * @brief get the index of compare and copy key function pointer
- * @param nkey    : number of keys used
- * @param t[nkey] : type length argument of key-1, key-2, key-3
- * of type T2SORT_INT32_T, T2SORT_FLOAT, ...
+ * @param nkey : number of keys used
+ * @param keys : keys->type of T2SORT_INT32_T, T2SORT_FLOAT, ...
+ * return the corresponding gentype.py func-pointer array index.
  * */
-static int t2sort_get_index(int nkey, int *t)
+static int 
+t2sort_get_func_index(int nkey, const t2sort_key_def_t *keys)
 {
     int index=-1;
     if(nkey==1)
-        index = t[0]*21;
+        index = keys[0].type*21;
     else if(nkey==2)
-        index = t[0]*21+t[1]*5+1;
+        index = keys[0].type*21+keys[1].type*5+1;
     else if(nkey==3)
-        index = t[0]*21+t[1]*5+t[2]+2;
+        index = keys[0].type*21+keys[1].type*5+keys[2].type+2;
     assert(index>=0 && index<84);
     return index;
 }
 
 /**
  * @brief get compare function for qsort, for 2 to 3 keys
- * @param num  : number of keys, 1, 2 or 3
- * @param variable length arguments of T2SORT_INT32, ... types
+ * @param nkey : number of keys, 1, 2 or 3
+ * @param keys : keys->type of T2SORT_INT32, ... types
  * return the function pointer of corresponding compare function.
  * */
-static int (*t2sort_getcmp(int num, ...))(const void*,const void*)
+static int 
+(*t2sort_getcmp(int nkey, const t2sort_key_def_t *keys))
+    (const void*,const void*)
 {
-    int t[3];
-    va_list valist;
-    assert(num<=3 && num>=1);   //1-3 keys
-    va_start(valist, num);
-    for(int i=0; i<num; i++)
-        t[i] = va_arg(valist, int);
-    va_end(valist);
-    int index = t2sort_get_index(num, t);
+    int index = t2sort_get_func_index(nkey, keys);
     return cmp_funcs[index];
 }
 
 //return the key extraction function
-static void (*t2sort_getcpy(int num, ...))(const void**,int,const int*,void*)
+static void 
+(*t2sort_getcpy(int nkey, const t2sort_key_def_t *keys))
+    (const void**,int,const int*,void*)
 {
-    int t[3];
-    va_list valist;
-    assert(num<=3 && num>=1);   //1-3 keys
-    va_start(valist, num);
-    for(int i=0; i<num; i++)
-        t[i] = va_arg(valist, int);
-    va_end(valist);
-    int index = t2sort_get_index(num, t);
+    int index = t2sort_get_func_index(nkey, keys);
     return cpy_funcs[index];
 }

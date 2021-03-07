@@ -120,6 +120,8 @@ typedef struct t2sort_struct {
     int                 wpntr;      //ntr capacity of write pile
     pile_t            * pile;
 //    int                 iwp;        //current operating pile
+    void (*func_cmp_key)(const void*,const void*);
+    void (*func_cpy_key)(const void**,int,const int*,void*);
 //////////////////////////////////////////////
 
     int         buff_size;
