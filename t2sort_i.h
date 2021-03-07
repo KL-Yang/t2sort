@@ -111,6 +111,7 @@ typedef struct t2sort_struct {
     int                 wioq;
     t2sort_key_def_t  * key;
     int                 nkey;
+    int                 klen;
     int                 bsize;      //user given buffer size
     int                 flag;
 //////////////////////////////////////////////
