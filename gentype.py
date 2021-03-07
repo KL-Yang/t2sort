@@ -3,9 +3,9 @@ import sys
 ##########################################################
 # Support maximum 3 key all togather, template functions
 ##########################################################
-type1_str = "typedef struct {{ {t1}  key1; }} t2sort_{t1}_t;"
-type2_str = "typedef struct {{ {t1}  key1; {t2} key2; }} t2sort_{t1}_{t2}_t;"
-type3_str = "typedef struct {{ {t1}  key1; {t2} key2; {t3} key3; }} t2sort_{t1}_{t2}_{t3}_t;"
+type1_str = "typedef struct {{ {t1}  key1; void *p; }} t2sort_{t1}_t;"
+type2_str = "typedef struct {{ {t1}  key1; {t2} key2; void *p;}} t2sort_{t1}_{t2}_t;"
+type3_str = "typedef struct {{ {t1}  key1; {t2} key2; {t3} key3; void *p;}} t2sort_{t1}_{t2}_{t3}_t;"
 
 type1_cmp = """
 static int cmp_{t1}(const void *p1, const void *p2) {{
