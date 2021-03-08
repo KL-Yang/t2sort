@@ -121,7 +121,7 @@ typedef struct t2sort_struct {
     pile_t            * pile;
 //    int                 iwp;        //current operating pile
     int  (*func_cmp_key)(const void*,const void*);
-    void (*func_cpy_key)(const void*,int,int,const int*,void*);
+    void (*func_cpy_key)(const void*,int,int,const t2sort_key_def_t*,void*);
 //////////////////////////////////////////////
 
     int         buff_size;

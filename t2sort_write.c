@@ -14,10 +14,10 @@ block_keys_list(t2sort_h h, pile_t *tail, int *ntr)
     while(head->bpid!=0) {  //find block head
         bntr += head->ntr;
         head  = head->prev;
-    };
+    }; //assemble from head in storage order
     void *base = malloc(bntr*h->klen), *pkey=base;
     while(nkey<bntr) {
-        h->func_cpy_key(head->p, h->trlen, head->ntr, pkey);
+        h->func_cpy_key(head->p, h->trlen, head->ntr, h->key, pkey);
         nkey+=head->ntr;
         pkey+=head->ntr*h->klen;
         head=head->next;
@@ -29,9 +29,14 @@ block_keys_list(t2sort_h h, pile_t *tail, int *ntr)
 static void
 t2sort_wblock_process(t2sort_t *h, pile_t *tail, int trlen)
 {
-    int ninst; void *key;
+    int ninst; void *key; void **ptr;
     //1.sort the block key and data
-    key = block_key_list(h, tail, &ninst);
+    key = block_keys_list(h, tail, &ninst);
+    ptr = malloc(ninst*sizeof(void*));
+    for(int i=0; i<ninst; i++) {
+        ptr[i] = ((void**)(key+i*h->klen))[0];
+        ((int64_t*)(key+i*h->klen))[0] = i;
+    }
     qsort(key, ninst, h->klen, h->func_cmp_key);
 
     //2.write each pile on disk

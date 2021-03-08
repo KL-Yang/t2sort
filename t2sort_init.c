@@ -44,8 +44,7 @@ t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys,
     h->nkey  = nkey;
     h->wioq  = wioq;
     h->flag  = flag;
-    for(int i=0; i<nkey; i++)
-        h->klen += t2sort_type_size[keys[i].type];
+    h->klen  = t2sort_key_size(nkey, keys);
     t2sort_init_scratch(h);
     t2sort_init_wpile(h, bsize, trlen, wioq);
     h->func_cmp_key = t2sort_getcmp(nkey, keys);
