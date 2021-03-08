@@ -9,7 +9,7 @@
 #define MB      (1024L*1024L)
 int main()
 {
-    int trlen = TRLEN, nkey = 2, bsize=60*MB, wioq = 4;
+    int trlen = TRLEN, nkey = 2, bsize=60, wioq = 4;
     int flag=0, batch=500, nread;
     t2sort_key_def_t keys[] = {
         {.offset=GKOFS, .type=T2SORT_INT32_T, .order=1},
@@ -29,11 +29,12 @@ int main()
     close(fd);
 
     //open and read file, call t2sort_dump()
-    t2sort_reset(sort);
-    t2sort_read(sort, buff, batch);
+    //t2sort_reset(sort);
+    //t2sort_read(sort, buff, batch);
     //or readraw();
 
     t2sort_destroy(sort);
     free(buff);
+    printf("runs to the end!\n");
     return 0;
 }

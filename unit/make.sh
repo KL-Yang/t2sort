@@ -2,6 +2,10 @@
 
 flag="-W -Wall -O0 -ggdb"
 
+gcc $flag unit5_test1.c -o unit5_test1 -lm -lrt ../t2sort.o 
+./unit5_test1
+exit
+
 ########## unit test-1
 gcc -c $flag unit1_map.c 
 gcc $flag -o unit1_map unit1_map.o -lm
