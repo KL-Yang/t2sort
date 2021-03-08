@@ -3,9 +3,9 @@ import sys
 ##########################################################
 # Support maximum 3 key all togather, template functions
 ##########################################################
-type1_str = "typedef struct {{ {t1}  key1; void *p; }} t2sort_{t1}_t;"
-type2_str = "typedef struct {{ {t1}  key1; {t2} key2; void *p;}} t2sort_{t1}_{t2}_t;"
-type3_str = "typedef struct {{ {t1}  key1; {t2} key2; {t3} key3; void *p;}} t2sort_{t1}_{t2}_{t3}_t;"
+type1_str = "typedef struct {{ {t1}  key1; union {{ const void *p; int64_t i;}}; }} t2sort_{t1}_t;"
+type2_str = "typedef struct {{ {t1}  key1; {t2} key2; union {{ const void *p; int64_t i;}}; }} t2sort_{t1}_{t2}_t;"
+type3_str = "typedef struct {{ {t1}  key1; {t2} key2; {t3} key3; union {{ const void *p; int64_t i;}}; }} t2sort_{t1}_{t2}_{t3}_t;"
 
 type1_cmp = """
 static int cmp_{t1}(const void *p1, const void *p2) {{
@@ -40,7 +40,7 @@ static void cpy_{t1}(const void *p, int l, int n, const int *ib, void *pk) {{
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * k1 = ({t1} *)(p+ib[0]);
         t2sort_{t1}_t *k = pk;
-        k[i].key1 = *k1;
+        k[i].key1 = *k1; k[i].p = p;
     }} }}
 """
 type2_cpy = """
@@ -49,7 +49,7 @@ static void cpy_{t1}_{t2}(const void *p, int l, int n, const int *ib, void *pk) 
         {t1} * k1 = ({t1} *)(p+ib[0]);
         {t2} * k2 = ({t2} *)(p+ib[1]);
         t2sort_{t1}_{t2}_t *k = pk;
-        k[i].key1 = *k1; k[i].key2 = *k2;
+        k[i].key1 = *k1; k[i].key2 = *k2; k[i].p = p;
     }} }}
 """
 type3_cpy = """
@@ -59,7 +59,7 @@ static void cpy_{t1}_{t2}_{t3}(const void *p, int l, int n, const int *ib, void 
         {t2} * k2 = ({t2} *)(p+ib[1]);
         {t3} * k3 = ({t3} *)(p+ib[2]);
         t2sort_{t1}_{t2}_{t3}_t *k = pk;
-        k[i].key1 = *k1; k[i].key2 = *k2; k[i].key3 = *k3;
+        k[i].key1 = *k1; k[i].key2 = *k2; k[i].key3 = *k3; k[i].p = p;
     }} }}
 """
 #debug function to cross check and validate helper functions
