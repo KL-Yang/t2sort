@@ -1,14 +1,11 @@
 #!/bin/bash
 
-flag="-W -Wall -O0 -g"
-gcc -c $flag common.cpp
-g++ -c $flag map_test1.cpp
-g++ -c $flag ../t2sort_map.cpp
-g++ $flag -o unit1 common.o map_test1.o t2sort_map.o
-#./unit1 200 100 | tee log
+flag="-W -Wall -O0 -ggdb"
+
 ########## unit test-1
 gcc -c $flag unit1_map.c 
 gcc $flag -o unit1_map unit1_map.o -lm
+./unit1_map 1234 2000
 exit
 
 ########## unit test-2
