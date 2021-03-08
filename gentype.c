@@ -1,3 +1,6 @@
+#ifndef C_GENTYPE_T2SORT
+#define C_GENTYPE_T2SORT
+
 #include "gentype_gen.h"
 #include "gentype_gen.c"
 
@@ -50,3 +53,4 @@ t2sort_key_size(int nkey, const t2sort_key_def_t *keys)
     int index = t2sort_get_func_index(nkey, keys);
     return siz_types[index];
 }
+#endif

@@ -1,3 +1,5 @@
+#ifndef C_T2SORT_INIT_T2SORT
+#define C_T2SORT_INIT_T2SORT
 
 #define PAGE_SIZE 4096
 
@@ -5,6 +7,8 @@ int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
     int pilesize;
     h->wpntr = floor((bsize*1024L*1024L)/((wioq+1)*trlen));
+    printf("%s: bsize=%d wpntr=%d wioq=%d\n", 
+            __func__, bsize, h->wpntr, wioq);
     pilesize = PAGE_SIZE*(floor(h->wpntr*trlen/PAGE_SIZE)+2);
     h->_base = malloc(pilesize*(wioq+1));
 
@@ -16,6 +20,7 @@ int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
         h->pile[i].prev = &h->pile[(i+wioq)%(wioq+1)];
         h->pile[i].base = h->_base+i*pilesize;
     }
+    h->pile->p = h->pile->base; //first pile
     return 0;
 }
 
@@ -51,3 +56,4 @@ t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys,
     h->func_cpy_key = t2sort_getcpy(nkey, keys);
     return (t2sort_h)h;
 }
+#endif
