@@ -2,7 +2,7 @@
 #include "../gentype_gen.h"
 #include "../gentype_gen.c"
 #include "common1.c"
-#include "../t2sort_map.c"
+#include "../t2sort_map_sort.c"
 
 /**
  * @brief Out Of Place map to debug the inplace map
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
     //oop_map(nkey, size, pp, map, xx);
     void *swap = malloc(size);
-    t2sort_remap_pt(pp, nkey, map, size, swap);
+    t2sort_map_sort(pp, nkey, map, size, swap);
     memcpy(x, p, nkey*size);
     free(swap);
 

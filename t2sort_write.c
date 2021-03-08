@@ -2,46 +2,71 @@
 #define C_T2SORT_WRITE_T2SORT
 
 #define MIN(a,b)    ((a)>(b)?(b):(a))
+
 /**
- * @brief Get list of piles in current block
+ * Return a list of all traces in the block for sort
+ * This is no need, we need pointer as key's payload
  * */
-static pile_t ** block_pile_list(pile_t *pile, int n)
+static void *
+block_keys_list(t2sort_h h, pile_t *tail, int *ntr)
 {
-    pile_t **p = calloc(n, sizeof(pile_t*));
-    for(int i=n-1; i>=0; i--) {
-        assert(pile->bpid==i);
-        p[i] = pile; 
-        pile = pile->prev;
-    }
-    return p;
+    pile_t *head=tail; int bntr=head->ntr, nkey=0;
+    while(head->bpid!=0) {  //find block head
+        bntr += head->ntr;
+        head  = head->prev;
+    };
+    void *base = malloc(bntr*h->klen), *pkey=base;
+    while(nkey<bntr) {
+        h->func_cpy_key(head->p, h->trlen, head->ntr, pkey);
+        nkey+=head->ntr;
+        pkey+=head->ntr*h->klen;
+        head=head->next;
+    };
+    *ntr = bntr; assert(nkey==bntr);
+    return base;
 }
 
 static void
-t2sort_wblock_process(pile_t *pile, int n)
+t2sort_wblock_process(t2sort_t *h, pile_t *tail, int trlen)
 {
-    pile_t **p = block_pile_list(pile, n);
+    int ninst; void *key;
+    //1.sort the block key and data
+    key = block_key_list(h, tail, &ninst);
+    qsort(key, ninst, h->klen, h->func_cmp_key);
 
-    //1.sort the block
     //2.write each pile on disk
-    free(p);
+    free(key);
 }
 
-static void t2sort_wpile_wait(pile_t *pile)
+//reuse the pile struct for new block, need reset
+void t2sort_wpile_reset(pile_t *p)
 {
-    t2sort_aio_wait(&pile->cb, 1);
+    p->ntr = 0;
+    p->ri  = 0;
+    p->p   = p->base+p->prev->ri;
 }
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    int newblock=0;
     if(h->pile->ntr==h->wpntr) {    //delayed prev flush
-        if((++h->wpile)%h->wioq==0) {
+        h->wpile++;
+        h->pile->ri = (h->pile->ntr*h->trlen+
+                       h->pile->prev->ri)%PAGE_SIZE;
+        int newblock=(h->wpile%h->wioq==0);
+        if(newblock)
             t2sort_wblock_process(h->pile, h->wioq);
-            newblock=1;
-        }
-        t2sort_wpile_wait(h->pile->next);
+
         h->pile = h->pile->next;
-        h->pile->bpid = (newblock)?(0):(h->pile->prev->bpid+1);
+        if(h->pile->ntr!=0) {
+            t2sort_aio_wait(&h->pile->cb, 1);
+            t2sort_wpile_reset();
+            h->pile->ntr=0;
+            //reset the h->pile->p also!
+        }
+
+        h->pile->bpid = h->pile->prev->bpid+1;
+        if(newblock)
+            h->pile->bpid = 0;
     } //as later as possible to let user operate on praw
 
     void *praw = h->pile->p + h->pile->ntr*h->trlen;
