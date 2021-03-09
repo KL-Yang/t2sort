@@ -1,17 +1,15 @@
 #ifndef C_T2SORT_MAP_T2SORT
 #define C_T2SORT_MAP_T2SORT
-
 /**
- * Here cannot use pointer map, as it will not give enough
- * ordering information:
- *   1. order of pointers
- *   2. order of keys
- * while integer map orignally is in sequantial order.
- *
- * @param src  : source, unsorted, but position is in order
- * @param des  : destination, sorted pointers according keys
+ * Cannot use pointer map instead of index map, as pointer will 
+ * not give enough information to create a linked list.
+ *   1. in ideal case the memcpys form a single linked loop
+ *   2. actually it is breaked into many small linked loops
+ * @param p    : traces, originally out of order
+ * @param n    : number of traces
+ * @param m    : sorted map
+ * @param len  : trace length in byte
  * @param swap : temporial buffer for sorting
- *
  * */
 void
 t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
