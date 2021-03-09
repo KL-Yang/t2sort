@@ -3,6 +3,13 @@
 
 #define PAGE_SIZE 4096
 
+void t2sort_free_wpile(pile_t *p)
+{
+    while(p->pid!=0) 
+        p=p->next;
+    free(p);
+}
+
 int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
     int pilesize;
@@ -30,10 +37,15 @@ int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 static void
 t2sort_init_scratch(t2sort_t *h)
 {
-    char scratchname[]="delete_XXXXXX";
-    mkstemp(scratchname);
-    printf("%s: open scratch (%s)\n", __func__, scratchname);
-    h->fd = open(scratchname, O_RDWR|O_CREAT, 
+    char scratchname_d[]="delete_d_XXXXXX";
+    mkstemp(scratchname_d);
+    char scratchname_k[]="delete_k_XXXXXX";
+    mkstemp(scratchname_k);
+    printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
+            scratchname_d, scratchname_k);
+    h->fd = open(scratchname_d, O_RDWR|O_CREAT, 
+                    S_IRWXU|S_IRWXG|S_IRWXO);
+    h->fd_keys = open(scratchname_k, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);
 }
 

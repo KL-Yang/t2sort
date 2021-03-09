@@ -4,6 +4,7 @@ int t2sort_destroy(t2sort_h h)
 {
     t2sort_t *t = (t2sort_t*)h;
     close(t->fd);
+    close(t->fd_keys);
     free(t->key);
     free(t);
     return 0;

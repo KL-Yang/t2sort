@@ -29,7 +29,7 @@ int main()
     close(fd);
 
     //open and read file, call t2sort_dump()
-    //t2sort_reset(sort);
+    t2sort_reset(sort);
     //t2sort_read(sort, buff, batch);
     //or readraw();
 

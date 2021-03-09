@@ -32,4 +32,17 @@ t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
         }
     }
 }
+
+//this is dumb version use much more memory
+void t2sort_map_sort2(void **p, int n, int *m, int64_t len)
+{
+    void *x = calloc(n, len);
+    for(int i=0, j; i<n; i++) {
+        j = m[i];
+        memcpy(x+i*len, p[j], len);
+    }
+    for(int i=0; i<n; i++) 
+        memcpy(p[i], x+i*len, len);
+    free(x);
+}
 #endif
