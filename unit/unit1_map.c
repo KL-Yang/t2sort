@@ -1,7 +1,7 @@
 #include "../t2sort_i.h"
 #include "../gentype_gen.h"
 #include "../gentype_gen.c"
-#include "common1.c"
+#include "../t2sort_debug.c"
 #include "../t2sort_map_sort.c"
 
 /**
@@ -34,33 +34,32 @@ int main(int argc, char *argv[])
     size = atoi(argv[2]);
     srandom(1234);
 
-    t2sort_key_def_t key[] = {
+    t2sort_key_def_t kdef[] = {
         {.offset=0, .type=T2SORT_INT32_T, .order=1},
         {.offset=4, .type=T2SORT_INT32_T, .order=1} };
 
     //Generate data
     void *p = calloc(nkey, size);
-    gen_data(p, nkey, size, key[0].offset, 1, 50, 
-        key[1].offset, 1, 200);
+    dbg_gen_data(p, nkey, size, kdef[0].offset, 1, 50, 
+        kdef[1].offset, 1, 200);
 
     //extrace keys
     t2sort_int32_t_int32_t_t *k;
     k = calloc(nkey, sizeof(t2sort_int32_t_int32_t_t));
-    int ibyte[2] = {key[0].offset, key[1].offset};
-    cpy_int32_t_int32_t(p, size, nkey, ibyte, k);
+    cpy_int32_t_int32_t(p, size, nkey, kdef, k);
 
     void **pp = calloc(nkey, sizeof(void*));
     for(int i=0; i<nkey; i++) {
-        pp[i] = k[i].p;
+        pp[i] = k[i].pay.ptr;
         assert(pp[i]==p+i*size);
-        k[i].i = i;
+        k[i].pay.idx = i;
     }
     qsort(k, nkey, sizeof(t2sort_int32_t_int32_t_t),
             cmp_int32_t_int32_t);
 
     int *map = calloc(nkey, sizeof(int));
     for(int i=0; i<nkey; i++)
-        map[i] = k[i].i;
+        map[i] = k[i].pay.idx;
     free(k);
 
     void *x = calloc(nkey, size);
@@ -79,9 +78,9 @@ int main(int argc, char *argv[])
     free(xx);
     free(p);
     
-    keys_print(x, nkey, size, key[0].offset, key[1].offset);
-    keys_valid(x, nkey, size, key[0].offset, key[1].offset);
-    data_valid(x, nkey, size, key[0].offset, key[1].offset);
+    dbg_keys_print(x, nkey, size, kdef[0].offset, kdef[1].offset);
+    dbg_keys_valid(x, nkey, size, kdef[0].offset, kdef[1].offset);
+    dbg_data_valid(x, nkey, size, kdef[0].offset, kdef[1].offset);
 
     free(x);
     return 0;
