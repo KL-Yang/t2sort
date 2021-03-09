@@ -2,12 +2,16 @@
 #define C_T2SORT_RESET_T2SORT
 
 //each time read h->wpntr*h->wioq
-static void
-t2sort_sort_rque(void *key, int nkey, int klen, int bntr)
+static t2sort_que_t *
+t2sort_sort_rque(void *key, int nkey, int klen, int bntr, 
+                int *nrque)
 {
+
     int xntr, nblk = ceilf(nkey*1.0f/bntr);
     int f[nblk], n[nblk], l[nblk]; void *bkey=key;
-    for(int k=0; k<nkey; k+=bntr) {
+    int nque=0;
+    t2sort_que_t *rque = calloc(nblk*nblk, sizeof(t2sort_que_t));
+    for(int k=0, mblk=0; k<nkey; k+=bntr, mblk++) {
         xntr = MIN(bntr, nkey-k);
         for(int i=0; i<nblk; i++) {
             f[i] = INT_MAX;
@@ -23,12 +27,21 @@ t2sort_sort_rque(void *key, int nkey, int klen, int bntr)
         }
         int sum = 0;
         for(int i=0; i<nblk; i++) {
-            if(l[i]!=(-1)) 
+            if(l[i]!=(-1)) {
                 assert(n[i]==l[i]-f[i]+1);
+                rque[nque].ntr  = n[i];
+                rque[nque].blk  = i;
+                rque[nque].seek = i*bntr+f[i];
+                rque[nque].mblk = mblk;
+                nque++;
+            }
             sum += n[i];
         }
         assert(sum==xntr);
     }
+    *nrque = nque;
+    rque = realloc(rque, nque*sizeof(t2sort_que_t));
+    return rque;
 }
 
 int t2sort_reset(t2sort_h h)
@@ -56,7 +69,8 @@ int t2sort_reset(t2sort_h h)
     //3. sort all keys
     qsort(key, h->winst, h->klen, h->func_cmp_key);
     //4. build read queue!
-    t2sort_sort_rque(key, h->winst, h->klen, h->wpntr*h->wioq);
+    h->rque = t2sort_sort_rque(key, h->winst, h->klen, 
+                h->wpntr*h->wioq, &h->nque);
     //5. release the key memories.
     free(key);
     return 0;

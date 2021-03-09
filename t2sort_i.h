@@ -33,6 +33,15 @@ typedef union t2sort_pay_struct {
     } bpi;  //Block-Pile-Information
 } t2sort_pay_t;
 
+//queue generation algorith ensure ntr aligned with block size
+typedef struct {
+    int             ntr;
+    int             blk;    //read from which block on disk
+    //additional information for later aligned operation.
+    off_t           seek;
+    int             mblk;   //build which block in memory
+} t2sort_que_t;
+
 //pile: use shifted buffer for DIO
 //  pile align at 4K : must
 //  pile align trace : must for in memory sort.
@@ -68,7 +77,6 @@ typedef struct t2sort_struct {
     int                 fd_keys;    //keys file, not used yet
     int                 trlen;
     int                 wioq;
-//  t2sort_key_def_t  * key;
     t2sort_key_def_t  * kdef;
     int                 nkey;
     int                 klen;
@@ -80,13 +88,14 @@ typedef struct t2sort_struct {
     int                 winst;      //how many instance write
     int                 wpntr;      //ntr capacity of write pile
     pile_t            * pile;
-//    int                 iwp;        //current operating pile
+//////////////////////////////////////////////
+    t2sort_que_t      * rque;
+    int                 nque;
+//////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);
 //////////////////////////////////////////////
-
-    int         buff_size;
-    void      *_base;
+    void              *_base;
 } t2sort_t;
 
 int dbg_gen_key(int kmin, int kmax);
