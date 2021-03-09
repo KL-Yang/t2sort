@@ -3,9 +3,9 @@ import sys
 ##########################################################
 # Support maximum 3 key all togather, template functions
 ##########################################################
-type1_str = "typedef struct {{ union {{ const void *p; int64_t i;}}; {t1}  key1; }} t2sort_{t1}_t;"
-type2_str = "typedef struct {{ union {{ const void *p; int64_t i;}}; {t1}  key1; {t2} key2; }} t2sort_{t1}_{t2}_t;"
-type3_str = "typedef struct {{ union {{ const void *p; int64_t i;}}; {t1}  key1; {t2} key2; {t3} key3; }} t2sort_{t1}_{t2}_{t3}_t;"
+type1_str = "typedef struct {{ t2sort_pay_t pay; {t1}  key1; }} t2sort_{t1}_t;"
+type2_str = "typedef struct {{ t2sort_pay_t pay; {t1}  key1; {t2} key2; }} t2sort_{t1}_{t2}_t;"
+type3_str = "typedef struct {{ t2sort_pay_t pay; {t1}  key1; {t2} key2; {t3} key3; }} t2sort_{t1}_{t2}_{t3}_t;"
 
 type1_cmp = """
 static int cmp_{t1}(const void *p1, const void *p2) {{
@@ -36,30 +36,30 @@ static int cmp_{t1}_{t2}_{t3}(const void *p1, const void *p2) {{
 }}
 """
 type1_cpy = """
-static void cpy_{t1}(const void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * k1 = ({t1} *)(p+kd[0].offset);
         t2sort_{t1}_t *k = pk;
-        k[i].key1 = *k1; k[i].p = p;
+        k[i].key1 = *k1; k[i].pay.ptr = p;
     }} }}
 """
 type2_cpy = """
-static void cpy_{t1}_{t2}(const void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}_{t2}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * k1 = ({t1} *)(p+kd[0].offset);
         {t2} * k2 = ({t2} *)(p+kd[1].offset);
         t2sort_{t1}_{t2}_t *k = pk;
-        k[i].key1 = *k1; k[i].key2 = *k2; k[i].p = p;
+        k[i].key1 = *k1; k[i].key2 = *k2; k[i].pay.ptr = p;
     }} }}
 """
 type3_cpy = """
-static void cpy_{t1}_{t2}_{t3}(const void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}_{t2}_{t3}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * k1 = ({t1} *)(p+kd[0].offset);
         {t2} * k2 = ({t2} *)(p+kd[1].offset);
         {t3} * k3 = ({t3} *)(p+kd[2].offset);
         t2sort_{t1}_{t2}_{t3}_t *k = pk;
-        k[i].key1 = *k1; k[i].key2 = *k2; k[i].key3 = *k3; k[i].p = p;
+        k[i].key1 = *k1; k[i].key2 = *k2; k[i].key3 = *k3; k[i].pay.ptr = p;
     }} }}
 """
 #debug function to cross check and validate helper functions
@@ -134,7 +134,7 @@ for t1 in types:
         print()
 print("};\n")
 
-print("static void (*cpy_funcs[4+16+64])(const void*,int,int,const t2sort_key_def_t*,void*) = {")
+print("static void (*cpy_funcs[4+16+64])(void*,int,int,const t2sort_key_def_t*,void*) = {")
 for t1 in types:
     print("cpy_{t1}, ".format(t1=t1), end='')
     for t2 in types:
