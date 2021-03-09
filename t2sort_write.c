@@ -1,8 +1,5 @@
 #ifndef C_T2SORT_WRITE_T2SORT
 #define C_T2SORT_WRITE_T2SORT
-
-#define MIN(a,b)    ((a)>(b)?(b):(a))
-
 /**
  * Return a list of all traces in the block for sort
  * This is no need, we need pointer as key's payload
@@ -18,7 +15,7 @@ block_keys_list(t2sort_h h, pile_t *tail, int *ntr)
     void *base, *pkey;
     base = pkey = malloc((*ntr)*h->klen);
     for(int i=0; i<=tail->bpid; i++, head=head->next) {
-        h->func_cpy_key(head->p, h->trlen, head->ntr, h->key, pkey);
+        h->func_cpy_key(head->p, h->trlen, head->ntr, h->kdef, pkey);
         pkey+=head->ntr*h->klen;
     }
     return base;

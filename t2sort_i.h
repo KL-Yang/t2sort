@@ -14,6 +14,8 @@
 #include <fcntl.h>
 #include <aio.h>
 
+#define MIN(a,b)    ((a)>(b)?(b):(a))
+
 #include "t2sort.h"
 
 typedef struct t2sort_aio_struct {
@@ -64,7 +66,8 @@ typedef struct t2sort_struct {
     int                 fd_keys;    //keys file, not used yet
     int                 trlen;
     int                 wioq;
-    t2sort_key_def_t  * key;
+//  t2sort_key_def_t  * key;
+    t2sort_key_def_t  * kdef;
     int                 nkey;
     int                 klen;
     int                 bsize;      //user given buffer size
