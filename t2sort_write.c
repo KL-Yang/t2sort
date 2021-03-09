@@ -10,19 +10,17 @@
 static void *
 block_keys_list(t2sort_h h, pile_t *tail, int *ntr)
 {
-    pile_t *head=tail; int bntr=head->ntr, nkey=0;
-    while(head->bpid!=0) {  //find block head
-        bntr += head->ntr;
-        head  = head->prev;
-    }; //assemble from head in storage order
-    void *base = malloc(bntr*h->klen), *pkey=base;
-    while(nkey<bntr) {
+    pile_t *head=tail; *ntr=0;
+    for(int i=tail->bpid; i>=0; i--, head=head->prev)
+        *ntr += head->ntr;
+    head = head->next;  //reverse the over-run
+    //assemble from head in storage order
+    void *base, *pkey;
+    base = pkey = malloc((*ntr)*h->klen);
+    for(int i=0; i<=tail->bpid; i++, head=head->next) {
         h->func_cpy_key(head->p, h->trlen, head->ntr, h->key, pkey);
-        nkey+=head->ntr;
         pkey+=head->ntr*h->klen;
-        head=head->next;
-    };
-    *ntr = bntr; assert(nkey==bntr);
+    }
     return base;
 }
 
@@ -63,7 +61,8 @@ t2sort_wblock_process(t2sort_t *h, pile_t *tail)
     for(int i=0; i<ninst; i++) 
         map[i] = ((t2sort_pay_t*)(key+i*h->klen))->idx;
 
-    t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
+    //t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
+    t2sort_map_sort2(ptr, ninst, map, h->trlen);
     free(tmp);
     free(map);
     free(ptr);
