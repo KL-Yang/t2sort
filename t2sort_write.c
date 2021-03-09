@@ -55,17 +55,21 @@ t2sort_wblock_process(t2sort_t *h, pile_t *tail)
 
     int * map = malloc(ninst*sizeof(int));
     void *tmp = malloc(h->trlen);
-    for(int i=0; i<ninst; i++) 
+    for(int i=0; i<ninst; i++) {
         map[i] = ((t2sort_pay_t*)(key+i*h->klen))->idx;
-
-    //t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
-    t2sort_map_sort2(ptr, ninst, map, h->trlen);
+        ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->block;
+        ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
+    }
+    write(h->fd_keys, key, ninst*h->klen);
+    t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
+    //t2sort_map_sort2(ptr, ninst, map, h->trlen);
     free(tmp);
     free(map);
     free(ptr);
     free(key);
     //2.write each pile on disk
     block_pile_write(h, tail);
+    h->block++;
 }
 
 //reuse the pile struct for new block, need reset

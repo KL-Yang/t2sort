@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,6 +16,7 @@
 #include <aio.h>
 
 #define MIN(a,b)    ((a)>(b)?(b):(a))
+#define MAX(a,b)    ((a)>(b)?(a):(b))
 
 #include "t2sort.h"
 
@@ -74,6 +76,7 @@ typedef struct t2sort_struct {
     int                 flag;
 //////////////////////////////////////////////
     int                 wpile;      //how many pile processed
+    int                 block;
     int                 winst;      //how many instance write
     int                 wpntr;      //ntr capacity of write pile
     pile_t            * pile;
