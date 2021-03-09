@@ -86,4 +86,10 @@ typedef struct t2sort_struct {
     void      *_base;
 } t2sort_t;
 
+int dbg_gen_key(int kmin, int kmax);
+void dbg_gen_data(void *p, int n, size_t len, int gofs, int gmin, int gmax, int sofs, int smin, int smax);
+void dbg_keys_valid(void *p, int n, int len, int gofs, int sofs);
+void dbg_keys_print(void *p, int n, int len, int gofs, int sofs);
+void dbg_data_valid(void *p, int n, int len, int gofs, int sofs);
+
 #endif

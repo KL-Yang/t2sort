@@ -103,6 +103,9 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
  * */
 int t2sort_write(t2sort_h h, const void *p, int ntr)
 {
+    //dbg_keys_print(p, ntr, h->trlen, h->kdef[0].offset,
+    //        h->kdef[1].offset);
+
     int left=ntr, nput;
     void *praw; const void *psrc = p;
     while(left>0) {

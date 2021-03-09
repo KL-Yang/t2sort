@@ -12,11 +12,14 @@ int t2sort_reset(t2sort_h h)
         t2sort_aio_wait(&tail->cb, 1);
         tail = tail->next;
     } while(tail!=head);
+
     //read keys to the buffer for sorting!
     //1. free wpile buffers
     free(h->_base);
     t2sort_free_wpile(h->pile);
     //2. read all keys in memory, may exceed bsize.
+    dbg_blocks_check(h);
+
     void *key;
     key = malloc(h->winst*h->klen);
     //3. sort all keys

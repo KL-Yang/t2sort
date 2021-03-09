@@ -1,3 +1,4 @@
+/*
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+*/
+#include "../t2sort_i.h"
 
 static int gen_key(int kmin, int kmax)
 {
@@ -45,8 +48,6 @@ void gen_data(void *p, int n, size_t len,
     }
 }
 
-#define MIN(a,b)    ((a>b)?(b):(a))
-
 #define TRLEN   (1223*sizeof(float))
 #define GKOFS   0
 #define GKMIN   1
@@ -65,7 +66,7 @@ int main()
     for(int i=0, j=0; i<ntrace; i+=batch, j++) {
         int ngen = MIN(batch, ntrace-i);
         printf("write batch[%02d]=%d\n", j, ngen);
-        gen_data(buf, ngen, TRLEN, GKOFS, GKMIN, GKMAX,
+        dbg_gen_data(buf, ngen, TRLEN, GKOFS, GKMIN, GKMAX,
             SKOFS, SKMIN, SKMAX);
         write(fd, buf, ngen*TRLEN);
     }

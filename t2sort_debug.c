@@ -3,7 +3,7 @@
 /**
  * Generate random integer keys in range from kmin to kmax 
  * */
-static int dbg_gen_key(int kmin, int kmax)
+int dbg_gen_key(int kmin, int kmax)
 {
     int key;
     key = nearbyint(kmin+(kmax-kmin)*(random()*1.0/RAND_MAX));
@@ -78,8 +78,14 @@ void dbg_data_valid(void *p, int n, int len, int gofs, int sofs)
     }
 }
 
-void dbg_ablock_check()
+void dbg_ablock_check(t2sort_t *h, void *buff, int n)
 {
+    dbg_keys_valid(buff, n, h->trlen, h->kdef[0].offset,
+        h->kdef[1].offset);
+    dbg_keys_print(buff, n, h->trlen, h->kdef[0].offset,
+        h->kdef[1].offset);
+    dbg_data_valid(buff, n, h->trlen, h->kdef[0].offset,
+        h->kdef[1].offset);
 }
 
 void dbg_blocks_check(t2sort_t *h)
@@ -91,14 +97,10 @@ void dbg_blocks_check(t2sort_t *h)
         n = MIN(bntr, h->winst-i);
         pread(h->fd, buff, n*h->trlen, i*h->trlen);
         h->func_cpy_key(buff, h->trlen, n, h->kdef, pkey);
-        dbg_ablock_check();
+        dbg_ablock_check(h, buff, n);
     }
     free(buff);
     free(pkey);
-}
-
-void dbg_print_iikey()
-{
 }
 
 #endif
