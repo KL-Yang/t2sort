@@ -142,9 +142,8 @@ int t2sort_reset(t2sort_h h)
     free(h->_base);
 
     //for reference implementation
-    h->_base = calloc(h->pntr*(h->wioq+1), h->trlen);
-    //h->nwrap = h->pntr*(h->wioq+1);
     h->nwrap = h->pntr*(h->wioq);
+    h->_base = calloc(h->nwrap, h->trlen);
 
     //read for a block
     h->rslot = h->nwrap;    //all buffer is empty

@@ -109,8 +109,6 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     *ntr = MIN(*ntr, h->rtail-h->rdone);
     praw = h->_base+(h->rdone%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
-    printf("%s: h->rdone=%ld rtail=%ld |%d\n", __func__, 
-            h->rdone, h->rtail, *ntr); fflush(0);
     return praw;
 }
 
