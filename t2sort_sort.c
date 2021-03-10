@@ -26,6 +26,7 @@ t2sort_que_t *rque_split(t2sort_t *h, t2sort_que_t *x)
         return x;
     int ntrx = x->ntr-(h->rhead+x->ntr)%h->nwrap;
     int ntry = x->ntr-ntrx;
+    printf("  %s: %d -> %d+%d\n", __func__, x->ntr, ntrx, ntry); fflush(0);
     x->ntr = ntrx;      //first part
     t2sort_que_t *y;    //second part
     y = rque_new(x, ntry, x->blk, x->seek+ntrx);
@@ -142,7 +143,7 @@ int t2sort_reset(t2sort_h h)
     free(h->_base);
 
     //for reference implementation
-    h->nwrap = h->pntr*(h->wioq);
+    h->nwrap = h->pntr*(h->wioq+1);
     h->_base = calloc(h->nwrap, h->trlen);
 
     //read for a block

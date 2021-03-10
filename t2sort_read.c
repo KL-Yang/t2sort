@@ -65,10 +65,9 @@ void t2sort_one_rblock(t2sort_t *h, int nsort)
 int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
 {
     int ntr=0;
-    printf("%s| ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
     while(head!=tail) {
-        printf("%s: ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
         ntr += head->ntr;
+        printf("%s: ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
         head = head->next;
     };
     return ntr;
@@ -107,6 +106,7 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     }
     void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
+    *ntr = ring_wrap(h->rdone, (*ntr), h->nwrap);
     praw = h->_base+(h->rdone%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
     return praw;
