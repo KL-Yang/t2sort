@@ -98,6 +98,14 @@ int t2sort_reset(t2sort_h h)
     //4. build read queue!
     h->rque = t2sort_sort_rque(key, h->winst, h->klen, 
                 h->wpntr*h->wioq);
+    //debug
+    int xsum=0; t2sort_que_t *xtail = h->rque;
+    while(xtail!=NULL) {
+        xsum += xtail->ntr;
+        xtail = xtail->next;
+    }
+    printf("%s:total rque ntr=%d\n", __func__, xsum);
+    
     //h->rque = t2sort_rque_break(h->rque, &h->nque, h->winst, 
     //            h->wpntr*(h->wioq+1));
     //5. release the key memories.
@@ -106,6 +114,10 @@ int t2sort_reset(t2sort_h h)
     //1. free wpile buffers
     t2sort_free_wpile(h->pile);
     free(h->_base);
+
+    //for reference implementation
+    h->_base = calloc(h->wpntr*(h->wioq+1), h->trlen);
+    h->nwrap = h->wpntr*h->wioq;
 
     //read for a block
     return 0;

@@ -41,8 +41,8 @@ void dbg_keys_valid(void *p, int n, int len, int gofs, int sofs)
         int pk1 = ((int*)(p1+gofs))[0];
         int sk1 = ((int*)(p1+sofs))[0];
         if(((pk0==pk1) && sk0>sk1) || (pk0>pk1)) {
-                printf("Order is wrong<%d,%d> vs <%d,%d>!\n",
-                        pk0, sk0, pk1, sk1);
+                printf("Order is wrong @ %d <%d,%d> vs <%d,%d>!\n",
+                        i, pk0, sk0, pk1, sk1);
                 error++;
         } }
     if(error)
@@ -82,8 +82,8 @@ void dbg_ablock_check(t2sort_t *h, void *buff, int n)
 {
     dbg_keys_valid(buff, n, h->trlen, h->kdef[0].offset,
         h->kdef[1].offset);
-    dbg_keys_print(buff, n, h->trlen, h->kdef[0].offset,
-        h->kdef[1].offset);
+    //dbg_keys_print(buff, n, h->trlen, h->kdef[0].offset,
+    //    h->kdef[1].offset);
     dbg_data_valid(buff, n, h->trlen, h->kdef[0].offset,
         h->kdef[1].offset);
 }

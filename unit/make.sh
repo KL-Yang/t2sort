@@ -3,7 +3,7 @@
 flag="-W -Wall -O0 -ggdb"
 
 gcc $flag unit5_test1.c -o unit5_test1 -lm -lrt ../t2sort.o 
-./unit5_test1
+#./unit5_test1
 exit
 
 ########## unit test-1
