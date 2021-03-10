@@ -99,8 +99,6 @@ typedef struct t2sort_struct {
 
     pile_t            * pile;
 //////////////////////////////////////////////
-    t2sort_que_t      * rque;
-
     int                 rpos;       //read position wrap @ wrap
     int                 slot;       //read slots available
     t2sort_que_t      * read;       //waiting que

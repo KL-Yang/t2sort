@@ -12,74 +12,105 @@
 //  rdone, and increase rslot to allow more read
 //
 //  from rdone->rtail is readily availabe to give user
-//  to increase rtail, need access wait que.
+//  to increase rtail, need access wait que for block and sort
 //  to increase rhead, need access read que.
-//
 
-int t2sort_rblock_process(t2sort_t *h)
+//return the maximum size without wrap as first part!
+int ring_wrap(int i, int d, int n)
 {
-    int rbntr=0, bntr=h->bntr;
-    t2sort_que_t *head=h->rque;
-    while(rbntr<bntr && head!=NULL) {
-        void *buff = h->_base+rbntr*h->trlen;
-        size_t count = head->ntr*h->trlen;
-        off_t offset = head->seek*h->trlen;
-        pread(h->fd, buff, count, offset);
-        rbntr += head->ntr;
-        head = head->next;
-    } //TODO: release those read queue memory!!!
-    h->rque = head;
-    if(head!=NULL)
-        assert(rbntr==bntr);
-    if(rbntr==0)
-        return 0;
+    if(i%n+d<=n)
+        return d;
+    return (n-(i%n));
+}
 
-    void *key = malloc(rbntr*h->klen);
-    h->func_cpy_key(h->_base, h->trlen, rbntr, h->kdef, key);
-    void **ptr = malloc(rbntr*sizeof(void*));
-    for(int i=0; i<rbntr; i++) {
-        ptr[i] = ((t2sort_pay_t*)(key+i*h->klen))->ptr;
-        ((t2sort_pay_t*)(key+i*h->klen))->idx = i;
+void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
+{
+    void **ptr, *tmp; int *map;
+    tmp = malloc(h->trlen);
+    map = malloc(nkey*sizeof(int));
+    ptr = malloc(nkey*sizeof(void*));
+    for(int64_t i=0; i<nkey; i++) {
+        ptr[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->ptr;
+        ((t2sort_pay_t*)(pkey+i*h->klen))->idx = i;
     }
-    qsort(key, rbntr, h->klen, h->func_cmp_key);
-
-    int *map  = malloc(rbntr*sizeof(int));
-    void *tmp = malloc(h->trlen);
-    for(int i=0; i<rbntr; i++)
-        map[i] = ((t2sort_pay_t*)(key+i*h->klen))->idx;
-    t2sort_map_sort(ptr, rbntr, map, h->trlen, tmp);
-
-    dbg_ablock_check(h, h->_base, rbntr);
-
+    qsort(pkey, nkey, h->klen, h->func_cmp_key);
+    for(int64_t i=0; i<nkey; i++)
+        map[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->idx;
+    t2sort_map_sort(ptr, nkey, map, h->trlen, tmp);
     free(tmp);
     free(map);
     free(ptr);
-    free(key);
-    printf("%s: rbntr=%d bntr=%d\n", __func__, rbntr, bntr);
-    return rbntr;
+}
+
+//sort from h->rtail, +nsort
+void t2sort_one_rblock(t2sort_t *h, int nsort)
+{
+    void *buff, *pkey;
+    int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
+
+    pkey = malloc(nsort*h->klen);
+    buff = h->_base+(h->rtail%h->nwrap)*h->trlen;
+    h->func_cpy_key(buff, h->trlen, part1, h->kdef, pkey);
+    printf("%s: part1=%d nsort=%d\n", __func__, part1, nsort);
+    fflush(0);
+    if(part1<nsort) {
+        h->func_cpy_key(h->_base, h->trlen, nsort-part1, 
+                h->kdef, pkey+part1*h->klen);
+    }
+    sort_one_block(h, pkey, nsort);
+    free(pkey);
+}
+
+//count how many trace in the waiting queue!
+int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
+{
+    int ntr=0;
+    printf("%s| ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
+    while(head!=tail) {
+        printf("%s: ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
+        ntr += head->ntr;
+        head = head->next;
+    };
+    return ntr;
+}
+
+int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
+{
+    int ntr=0;
+    t2sort_que_t *newh=head->next;
+    while(newh!=NULL && ntr<bntr) {
+        t2sort_aio_wait(newh->aio, 1);
+        free(newh->aio);
+        ntr += newh->ntr;
+        newh->flag |= T2SORT_RQUE_FINISH;
+        free(newh);
+        newh = newh->next;
+    };
+    head->next = newh;
+    if(newh==NULL) { *tail = head; } 
+    else { assert(ntr==bntr); }
+    return ntr;
 }
 
 //in sort_reset, prepare the first block
 //h->rinst = h->pntr*h->wioq;
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
-    if((h->rdone+=h->rdfly)==h->nsort) {
-        int rbntr = t2sort_rblock_process(h);
-        if(rbntr==0) {
-            *ntr = 0;
-            return NULL;
-        }
-        h->nsort += rbntr;
+    h->rslot += h->rdfly;   //land the flying buffer
+    h->rdone += h->rdfly;
+    if(h->rdone==h->rtail) {
+        if(rque_wait_ntr(&h->wait_head, h->wait)<h->bntr)
+            try_issue_read(h); //need further issue read queue!
+        int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
+        t2sort_one_rblock(h, nsort);
+        h->rtail+=nsort;
     }
-    int rdone = h->rdone%h->nwrap;
-    int nsort = h->nsort%h->nwrap;
-    void *praw = h->_base+rdone*h->trlen;
-    if(nsort>rdone)
-        *ntr = MIN(*ntr, nsort-rdone);
-    else //wrapped
-        *ntr = MIN(*ntr, h->nwrap-rdone);
+    void *praw;
+    *ntr = MIN(*ntr, h->rtail-h->rdone);
+    praw = h->_base+(h->rdone%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
-    printf("%s: =%d\n", __func__, *ntr);
+    printf("%s: h->rdone=%ld rtail=%ld |%d\n", __func__, 
+            h->rdone, h->rtail, *ntr); fflush(0);
     return praw;
 }
 

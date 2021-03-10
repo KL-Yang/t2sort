@@ -67,6 +67,7 @@ t2sort_init(int trlen, int ndef, const t2sort_key_def_t *kdef,
     t2sort_init_wpile(h, bsize, trlen, wioq);
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
+    h->wait = &h->wait_head;
     return (t2sort_h)h;
 }
 #endif
