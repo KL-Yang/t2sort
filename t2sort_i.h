@@ -92,8 +92,7 @@ typedef struct t2sort_struct {
     int                 flag;
 //////////////////////////////////////////////
     int                 wpile;      //how many pile processed
-    int                 block;
-//  int                 nblk;
+    int                 nblk;
     int64_t             nkey;   //todo remove
     int                 wpntr;      //ntr capacity of write pile
     pile_t            * pile;
