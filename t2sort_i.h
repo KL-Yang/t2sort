@@ -107,15 +107,12 @@ typedef struct t2sort_struct {
     t2sort_que_t        wait_head;  //waiting que
     t2sort_que_t      * wait;       //initiate to &wait_head;
 
-    int                 nque;
+    int64_t             rkey;       //read key index
+
     int64_t             rdfly;      //readraw on the fly
     int64_t             rdone;      //read already given to user
     int64_t             nsort;
-    //int64_t             rinst;      //disk read header
     int64_t             nwrap;      //pntr*(wioq+1)
-
-    int64_t             nring;      //ring buffer length
-    int64_t             nslot;
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);
