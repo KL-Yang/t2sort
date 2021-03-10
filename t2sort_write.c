@@ -31,9 +31,9 @@ block_pile_write(t2sort_t *h, pile_t *tail)
     }; //assemble from head in storage order
     while(nkey<bntr) {
         t2sort_aio_write(&head->cb, h->fd, head->p, 
-            head->ntr*h->trlen, h->winst*h->trlen);
+            head->ntr*h->trlen, h->nkey*h->trlen);
         nkey+=head->ntr;
-        h->winst+=head->ntr;
+        h->nkey+=head->ntr;
         head=head->next;
     }
     return;

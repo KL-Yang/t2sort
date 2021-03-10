@@ -91,12 +91,12 @@ int t2sort_reset(t2sort_h h)
     dbg_blocks_check(h);
 
     void *key;
-    key = malloc(h->winst*h->klen);
-    pread(h->fd_keys, key, h->winst*h->klen, 0);
+    key = malloc(h->nkey*h->klen);
+    pread(h->fd_keys, key, h->nkey*h->klen, 0);
     //3. sort all keys
-    qsort(key, h->winst, h->klen, h->func_cmp_key);
+    qsort(key, h->nkey, h->klen, h->func_cmp_key);
     //4. build read queue!
-    h->rque = t2sort_sort_rque(key, h->winst, h->klen, 
+    h->rque = t2sort_sort_rque(key, h->nkey, h->klen, 
                 h->wpntr*h->wioq);
     //debug
     int xsum=0; t2sort_que_t *xtail = h->rque;
@@ -106,7 +106,7 @@ int t2sort_reset(t2sort_h h)
     }
     printf("%s:total rque ntr=%d\n", __func__, xsum);
     
-    //h->rque = t2sort_rque_break(h->rque, &h->nque, h->winst, 
+    //h->rque = t2sort_rque_break(h->rque, &h->nque, h->nkey, 
     //            h->wpntr*(h->wioq+1));
     //5. release the key memories.
     free(key);
