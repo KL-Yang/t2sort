@@ -13,10 +13,11 @@ void t2sort_free_wpile(pile_t *p)
 int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
     int pilesize;
-    h->wpntr = floor((bsize*1024L*1024L)/((wioq+1)*trlen));
-    printf("%s: bsize=%d wpntr=%d wioq=%d\n", 
-            __func__, bsize, h->wpntr, wioq);
-    pilesize = PAGE_SIZE*(floor(h->wpntr*trlen/PAGE_SIZE)+2);
+    h->pntr = floor((bsize*1024L*1024L)/((wioq+1)*trlen));
+    h->bntr = h->pntr*wioq;
+    printf("%s: bsize=%d pntr=%ld wioq=%d\n", 
+            __func__, bsize, h->pntr, wioq);
+    pilesize = PAGE_SIZE*(floor(h->pntr*trlen/PAGE_SIZE)+2);
     h->_base = malloc(pilesize*(wioq+1));
 
     //make write pile as double linked list
@@ -64,7 +65,7 @@ t2sort_init(int trlen, int ndef, const t2sort_key_def_t *kdef,
     h->klen  = t2sort_key_size(ndef, kdef);
     t2sort_init_scratch(h);
     t2sort_init_wpile(h, bsize, trlen, wioq);
-    h->nring = h->wpntr*(h->wioq+1);
+    h->nring = h->pntr*(h->wioq+1);
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
     return (t2sort_h)h;

@@ -3,7 +3,7 @@
 
 int t2sort_rblock_process(t2sort_t *h)
 {
-    int rbntr=0, bntr=h->wpntr*h->wioq;
+    int rbntr=0, bntr=h->bntr;
     t2sort_que_t *head=h->rque;
     while(rbntr<bntr && head!=NULL) {
         void *buff = h->_base+rbntr*h->trlen;
@@ -45,7 +45,7 @@ int t2sort_rblock_process(t2sort_t *h)
 }
 
 //in sort_reset, prepare the first block
-//h->rinst = h->wpntr*h->wioq;
+//h->rinst = h->pntr*h->wioq;
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     if((h->rdone+=h->rdfly)==h->nsort) {

@@ -94,7 +94,9 @@ typedef struct t2sort_struct {
     int                 wpile;      //how many pile processed
     int                 nblk;
     int64_t             nkey;   //todo remove
-    int                 wpntr;      //ntr capacity of write pile
+    int64_t             bntr;
+    int64_t             pntr;
+
     pile_t            * pile;
 //////////////////////////////////////////////
     t2sort_que_t      * rque;
@@ -109,8 +111,8 @@ typedef struct t2sort_struct {
     int64_t             rdfly;      //readraw on the fly
     int64_t             rdone;      //read already given to user
     int64_t             nsort;
-    int64_t             rinst;      //disk read header
-    int64_t             nwrap;      //wpntr*(wioq+1)
+    //int64_t             rinst;      //disk read header
+    int64_t             nwrap;      //pntr*(wioq+1)
 
     int64_t             nring;      //ring buffer length
     int64_t             nslot;

@@ -16,7 +16,7 @@ rque_new(t2sort_que_t *tail, int ntr, int dblk, int seek)
     return xque;
 }
 
-//each time read h->wpntr*h->wioq
+//each time read h->pntr*h->wioq
 static t2sort_que_t *
 t2sort_sort_rque(void *pkey, int nkey, int klen, int bntr)
 {
@@ -97,7 +97,7 @@ int t2sort_reset(t2sort_h h)
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
     //4. build read queue!
     h->rque = t2sort_sort_rque(key, h->nkey, h->klen, 
-                h->wpntr*h->wioq);
+                h->pntr*h->wioq);
     //debug
     int xsum=0; t2sort_que_t *xtail = h->rque;
     while(xtail!=NULL) {
@@ -107,7 +107,7 @@ int t2sort_reset(t2sort_h h)
     printf("%s:total rque ntr=%d\n", __func__, xsum);
     
     //h->rque = t2sort_rque_break(h->rque, &h->nque, h->nkey, 
-    //            h->wpntr*(h->wioq+1));
+    //            h->pntr*(h->wioq+1));
     //5. release the key memories.
     free(key);
 
@@ -116,8 +116,8 @@ int t2sort_reset(t2sort_h h)
     free(h->_base);
 
     //for reference implementation
-    h->_base = calloc(h->wpntr*(h->wioq+1), h->trlen);
-    h->nwrap = h->wpntr*h->wioq;
+    h->_base = calloc(h->pntr*(h->wioq+1), h->trlen);
+    h->nwrap = h->pntr*h->wioq;
 
     //read for a block
     return 0;

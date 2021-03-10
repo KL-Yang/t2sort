@@ -90,7 +90,7 @@ void dbg_ablock_check(t2sort_t *h, void *buff, int n)
 
 void dbg_blocks_check(t2sort_t *h)
 {
-    int bntr = h->wpntr*h->wioq;
+    int bntr = h->bntr;
     void *buff = malloc(bntr*h->trlen);
     void *pkey = malloc(bntr*h->klen);
     for(int64_t i=0, n; i<h->nkey; i+=bntr) {

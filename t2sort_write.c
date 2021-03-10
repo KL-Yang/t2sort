@@ -83,7 +83,7 @@ void t2sort_wpile_reset(pile_t *p)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    if(h->pile->ntr==h->wpntr) {    //delayed prev flush
+    if(h->pile->ntr==h->pntr) {    //delayed prev flush
         h->pile->next->bpid = h->pile->bpid+1;
         if((++h->wpile)%h->wioq==0) {
             t2sort_wblock_process(h, h->pile);
@@ -97,7 +97,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     } //as later as possible to let user operate on praw
 
     void *praw = h->pile->p + h->pile->ntr*h->trlen;
-    *ntr = MIN(*ntr, h->wpntr-h->pile->ntr);
+    *ntr = MIN(*ntr, h->pntr-h->pile->ntr);
     h->pile->ntr += (*ntr);
     return praw;
 }
