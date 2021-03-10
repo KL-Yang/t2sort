@@ -103,7 +103,8 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
         int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
         t2sort_one_rblock(h, nsort);
         h->rtail+=nsort;
-    }
+    } else try_issue_read(h);
+
     void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
     *ntr = ring_wrap(h->rdone, (*ntr), h->nwrap);

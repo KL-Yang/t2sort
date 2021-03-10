@@ -60,7 +60,7 @@ void rque_issue(t2sort_t *h, t2sort_que_t *r)
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
     h->rslot -= r->ntr;
-    printf("%s: ntr=%d\n", __func__, r->ntr);
+    printf("  %s: ntr=%d\n", __func__, r->ntr);
     rque_enque(&h->wait, r);    //attach to wait queue
 }
 
