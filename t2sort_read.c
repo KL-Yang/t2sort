@@ -1,6 +1,21 @@
 #ifndef C_T2SORT_READ_T2SORT
 #define C_T2SORT_READ_T2SORT
 
+//  use two queue
+//  rhead,    rslot
+// 1. read que, deque for aio_read, and attach to wait que
+//      read que move forward rhead, and reduces rslot
+// 2. wait que, deque for aio_wait, and ready to end user
+//      wait que move forward rtail only
+//  rtail
+// 3. If user already retrieve the result, move forward
+//  rdone, and increase rslot to allow more read
+//
+//  from rdone->rtail is readily availabe to give user
+//  to increase rtail, need access wait que.
+//  to increase rhead, need access read que.
+//
+
 int t2sort_rblock_process(t2sort_t *h)
 {
     int rbntr=0, bntr=h->bntr;

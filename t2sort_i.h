@@ -107,10 +107,15 @@ typedef struct t2sort_struct {
     t2sort_que_t        wait_head;  //waiting que
     t2sort_que_t      * wait;       //initiate to &wait_head;
 
-    int64_t             rkey;       //read key index
+//////////////////
+    int                 rslot;
+    int64_t             rhead;       //read key index
+    int64_t             rtail;      //because of 2nd pass sort
+                                    //increase at multiple of bntr
+    int64_t             rdone;      //read already given to user
+//////////////////////
 
     int64_t             rdfly;      //readraw on the fly
-    int64_t             rdone;      //read already given to user
     int64_t             nsort;
     int64_t             nwrap;      //pntr*(wioq+1)
 //////////////////////////////////////////////
