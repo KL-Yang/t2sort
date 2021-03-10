@@ -50,23 +50,23 @@ t2sort_init_scratch(t2sort_t *h)
 }
 
 t2sort_h
-t2sort_init(int trlen, int nkey, const t2sort_key_def_t *kdef, 
+t2sort_init(int trlen, int ndef, const t2sort_key_def_t *kdef, 
     int bsize, int wioq, int flag)
 {
     t2sort_t *h = calloc(1, sizeof(t2sort_t));
     h->bsize = bsize;
     h->trlen = trlen;
-    h->kdef  = calloc(nkey, sizeof(t2sort_key_def_t));
-    memcpy(h->kdef, kdef, nkey*sizeof(t2sort_key_def_t));
-    h->nkey  = nkey;
+    h->kdef  = calloc(ndef, sizeof(t2sort_key_def_t));
+    memcpy(h->kdef, kdef, ndef*sizeof(t2sort_key_def_t));
+    h->ndef  = ndef;
     h->wioq  = wioq;
     h->flag  = flag;
-    h->klen  = t2sort_key_size(nkey, kdef);
+    h->klen  = t2sort_key_size(ndef, kdef);
     t2sort_init_scratch(h);
     t2sort_init_wpile(h, bsize, trlen, wioq);
     h->nring = h->wpntr*(h->wioq+1);
-    h->func_cmp_key = t2sort_getcmp(nkey, kdef);
-    h->func_cpy_key = t2sort_getcpy(nkey, kdef);
+    h->func_cmp_key = t2sort_getcmp(ndef, kdef);
+    h->func_cpy_key = t2sort_getcpy(ndef, kdef);
     return (t2sort_h)h;
 }
 #endif
