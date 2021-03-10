@@ -1,47 +1,77 @@
 #ifndef C_T2SORT_RESET_T2SORT
 #define C_T2SORT_RESET_T2SORT
 
+t2sort_que_t *
+rque_new(t2sort_que_t *tail, int ntr, int dblk, int seek)
+{
+    if(ntr==0)  //do nothing
+        return tail;
+
+    t2sort_que_t *xque = calloc(1, sizeof(t2sort_que_t));
+    xque->ntr  = ntr;
+    xque->blk  = dblk;
+    xque->seek = seek;
+    tail->next = xque;
+    xque->id   = tail->id+1;
+    return xque;
+}
+
 //each time read h->wpntr*h->wioq
 static t2sort_que_t *
-t2sort_sort_rque(void *key, int nkey, int klen, int bntr, 
-                int *nrque)
+t2sort_sort_rque(void *pkey, int nkey, int klen, int bntr)
 {
+    t2sort_pay_t *payl=pkey;
+    t2sort_que_t *head, *tail;
+    int nblk = ceilf(nkey*1.0f/bntr), f[nblk], n[nblk];
 
-    int xntr, nblk = ceilf(nkey*1.0f/bntr);
-    int f[nblk], n[nblk], l[nblk]; void *bkey=key;
-    int nque=0;
-    t2sort_que_t *rque = calloc(nblk*nblk, sizeof(t2sort_que_t));
-    for(int k=0, mblk=0; k<nkey; k+=bntr, mblk++) {
-        xntr = MIN(bntr, nkey-k);
+    tail = head = calloc(1, sizeof(t2sort_que_t));
+    memset(f, 0, nblk*sizeof(int));
+    for(int k=0; k<nkey; k+=bntr) {
+        int xntr = MIN(bntr, nkey-k);
+        memset(n, 0, nblk*sizeof(int));
+        for(int j=0; j<xntr; j++, payl=(void*)payl+klen)
+            n[payl->bpi.blk]++;
+
         for(int i=0; i<nblk; i++) {
-            f[i] = INT_MAX;
-            l[i] = -1;
-            n[i] = 0;
+            tail = rque_new(tail, n[i], i, i*bntr+f[i]);
+            f[i] += n[i];
         }
-        for(int j=0; j<xntr; j++, bkey+=klen) {
-            int blk = ((t2sort_pay_t*)bkey)->bpi.blk;
-            int idx = ((t2sort_pay_t*)bkey)->bpi.idx;
-            f[blk] = MIN(f[blk], idx);
-            n[blk]++;
-            l[blk] = MAX(l[blk], idx);
-        }
-        int sum = 0;
-        for(int i=0; i<nblk; i++) {
-            if(l[i]!=(-1)) {
-                assert(n[i]==l[i]-f[i]+1);
-                rque[nque].ntr  = n[i];
-                rque[nque].blk  = i;
-                rque[nque].seek = i*bntr+f[i];
-                rque[nque].mblk = mblk;
-                nque++;
-            }
-            sum += n[i];
-        }
-        assert(sum==xntr);
     }
-    *nrque = nque;
-    rque = realloc(rque, nque*sizeof(t2sort_que_t));
-    return rque;
+    tail = head;
+    head = head->next;
+    free(tail);
+    return head;
+}
+
+//TODO: here break the read list at boundary!!!
+t2sort_que_t *
+t2sort_rque_break(t2sort_que_t *rque, int *nque, int nkey, int wrap)
+{
+    int nwrap=nkey/wrap, sum=0, nxque=0;
+    t2sort_que_t *xque = calloc(*nque+nwrap, sizeof(t2sort_que_t));
+    for(int i=0, j=0; i<*nque; i++,j++,nxque++) {
+        if(sum/wrap!=(sum+rque[i].ntr)/wrap) {
+            int res=(sum+rque[i].ntr)%wrap;
+            if(res!=0) {    //break one to two
+                assert(res<=rque[i].ntr);
+                memcpy(&xque[j+0], &rque[i], sizeof(t2sort_que_t));
+                memcpy(&xque[j+1], &rque[i], sizeof(t2sort_que_t));
+                xque[j+0].ntr=xque[j].ntr-res; 
+                xque[j+1].ntr=res;
+                xque[j+1].seek+=xque[j].ntr;
+                nxque++;
+                j++;
+            }
+        }
+        memcpy(&xque[j], &rque[i], sizeof(t2sort_que_t));
+        sum += rque[i].ntr;
+    }
+    assert(sum==nkey);
+    assert(nxque<=(*nque+nwrap));
+    free(rque);
+    *nque = nxque;
+    xque = realloc(xque, nxque*sizeof(t2sort_que_t));
+    return xque;
 }
 
 int t2sort_reset(t2sort_h h)
@@ -57,9 +87,6 @@ int t2sort_reset(t2sort_h h)
     } while(tail!=head);
 
     //read keys to the buffer for sorting!
-    //1. free wpile buffers
-    free(h->_base);
-    t2sort_free_wpile(h->pile);
     //2. read all keys in memory, may exceed bsize.
     dbg_blocks_check(h);
 
@@ -70,9 +97,17 @@ int t2sort_reset(t2sort_h h)
     qsort(key, h->winst, h->klen, h->func_cmp_key);
     //4. build read queue!
     h->rque = t2sort_sort_rque(key, h->winst, h->klen, 
-                h->wpntr*h->wioq, &h->nque);
+                h->wpntr*h->wioq);
+    //h->rque = t2sort_rque_break(h->rque, &h->nque, h->winst, 
+    //            h->wpntr*(h->wioq+1));
     //5. release the key memories.
     free(key);
+
+    //1. free wpile buffers
+    t2sort_free_wpile(h->pile);
+    free(h->_base);
+
+    //read for a block
     return 0;
 }
 

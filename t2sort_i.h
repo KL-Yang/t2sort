@@ -34,13 +34,21 @@ typedef union t2sort_pay_struct {
 } t2sort_pay_t;
 
 //queue generation algorith ensure ntr aligned with block size
-typedef struct {
+typedef struct t2sort_rque_struct t2sort_que_t;
+struct t2sort_rque_struct {
     int             ntr;
-    int             blk;    //read from which block on disk
+    int             blk;    //read from which disk block
     //additional information for later aligned operation.
-    off_t           seek;
+    off_t           seek;   //trace index of seeking
     int             mblk;   //build which block in memory
-} t2sort_que_t;
+    t2sort_aio_t  * aio;
+    t2sort_que_t  * next;
+    int             flag;
+    int             id;     //for debug
+};
+#define T2SORT_RQUE_SUBMIT  (1<<0)
+#define T2SORT_RQUE_SPLIT   (1<<1)
+#define T2SORT_RQUE_FINISH  (1<<2)
 
 //pile: use shifted buffer for DIO
 //  pile align at 4K : must
@@ -90,7 +98,22 @@ typedef struct t2sort_struct {
     pile_t            * pile;
 //////////////////////////////////////////////
     t2sort_que_t      * rque;
+
+    int                 rpos;       //read position wrap @ wrap
+    int                 slot;       //read slots available
+    t2sort_que_t      * read;       //waiting que
+    t2sort_que_t        wait_head;  //waiting que
+    t2sort_que_t      * wait;       //initiate to &wait_head;
+
     int                 nque;
+    int64_t             rdfly;      //readraw on the fly
+    int64_t             rdone;      //read already given to user
+    int64_t             nsort;
+    int64_t             rinst;      //disk read header
+    int64_t             nwrap;      //wpntr*(wioq+1)
+
+    int64_t             nring;      //ring buffer length
+    int64_t             nslot;
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);
