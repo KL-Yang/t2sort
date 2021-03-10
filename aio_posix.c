@@ -7,7 +7,7 @@
 void t2sort_aio_setup() {   /* do nothing */ }
 void t2sort_aio_destroy() { /* do nothing */ }
 
-void
+static void
 t2sort_aio_write(t2sort_aio_t *t2cb, int fd, void *buf, 
             size_t count, off_t offset)
 {
@@ -19,7 +19,7 @@ t2sort_aio_write(t2sort_aio_t *t2cb, int fd, void *buf,
     aio_write(&t2cb->paio);
 }
 
-void
+static void
 t2sort_aio_read(t2sort_aio_t *t2cb, int fd, void *buf, 
             size_t count, off_t offset)
 {
@@ -32,7 +32,7 @@ t2sort_aio_read(t2sort_aio_t *t2cb, int fd, void *buf,
 
 //int aio_suspend(const struct aiocb * const aiocb_list[],
 //int nitems, const struct timespec *timeout);
-void t2sort_aio_wait(t2sort_aio_t *t2cb, int n)
+static void t2sort_aio_wait(t2sort_aio_t *t2cb, int n)
 {
     const struct aiocb * cblist[n];
     for(int i=0; i<n; i++)

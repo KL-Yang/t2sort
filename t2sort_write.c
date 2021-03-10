@@ -62,7 +62,7 @@ t2sort_wblock_process(t2sort_t *h, pile_t *tail)
     }
     write(h->fd_keys, key, ninst*h->klen);
     t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
-    //t2sort_map_sort2(ptr, ninst, map, h->trlen);
+    //dbg_map_sort2(ptr, ninst, map, h->trlen);
     free(tmp);
     free(map);
     free(ptr);
@@ -73,7 +73,7 @@ t2sort_wblock_process(t2sort_t *h, pile_t *tail)
 }
 
 //reuse the pile struct for new block, need reset
-void t2sort_wpile_reset(pile_t *p)
+static void t2sort_wpile_reset(pile_t *p)
 {
     p->ntr = 0;
     p->p = p->base;

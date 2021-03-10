@@ -16,14 +16,14 @@
 //  to increase rhead, need access read que.
 
 //return the maximum size without wrap as first part!
-int ring_wrap(int i, int d, int n)
+static int ring_wrap(int i, int d, int n)
 {
     if(i%n+d<=n)
         return d;
     return (n-(i%n));
 }
 
-void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
+static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
 {
     void **ptr, *tmp; int *map;
     tmp = malloc(h->trlen);
@@ -43,7 +43,7 @@ void sort_one_block(t2sort_t *h, void *pkey, int nkey)
 }
 
 //sort from h->rtail, +nsort
-void t2sort_one_rblock(t2sort_t *h, int nsort)
+static void t2sort_one_rblock(t2sort_t *h, int nsort)
 {
     void *buff, *pkey;
     int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
@@ -62,7 +62,7 @@ void t2sort_one_rblock(t2sort_t *h, int nsort)
 }
 
 //count how many trace in the waiting queue!
-int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
+static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
 {
     int ntr=0;
     while(head!=tail) {
@@ -73,7 +73,7 @@ int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail)
     return ntr;
 }
 
-int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
+static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
 {
     int ntr=0;
     t2sort_que_t *newh=head->next;

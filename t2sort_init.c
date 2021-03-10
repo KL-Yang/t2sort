@@ -3,14 +3,14 @@
 
 #define PAGE_SIZE 4096
 
-void t2sort_free_wpile(pile_t *p)
+static void t2sort_free_wpile(pile_t *p)
 {
     while(p->pid!=0) 
         p=p->next;
     free(p);
 }
 
-int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
+static int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
     int pilesize;
     h->pntr = floor((bsize*1024L*1024L)/((wioq+1)*trlen));

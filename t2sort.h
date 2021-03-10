@@ -78,7 +78,7 @@ int t2sort_write(t2sort_h h, const void *p, int ntr);
  * Without reset, read/readraw can only sequentially read out 
  * once, with reset, can read again start from beginning.
  * */
-int t2sort_reset(t2sort_h h);
+int t2sort_sort(t2sort_h h);
 /**
  * Read or partial read data from the sorter
  * return the actually read number of trace

@@ -47,7 +47,7 @@ int main()
     close(fd);
 
     //open and read file, call t2sort_dump()
-    t2sort_reset(sort);
+    t2sort_sort(sort);
 
     int left=ninst;
     fd = open(TESTOU, O_RDWR|O_CREAT,

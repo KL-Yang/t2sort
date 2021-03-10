@@ -11,7 +11,7 @@
  * @param len  : trace length in byte
  * @param swap : temporial buffer for sorting
  * */
-void
+static void
 t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
 {
     for(register int i=0; i<n; /*no action*/ ) {
@@ -34,7 +34,7 @@ t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
 }
 
 //this is dumb version use much more memory
-void t2sort_map_sort2(void **p, int n, int *m, int64_t len)
+void dbg_map_sort2(void **p, int n, int *m, int64_t len)
 {
     void *x = calloc(n, len);
     for(int i=0, j; i<n; i++) {
