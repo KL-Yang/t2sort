@@ -20,6 +20,12 @@
 
 #include "t2sort.h"
 
+/* typedef struct {
+    void      *_base;
+    void      * p;
+    int         ntr;
+} t2_blk_t; */
+
 typedef struct t2sort_aio_struct {
     struct aiocb    paio;
 } t2sort_aio_t;

@@ -50,8 +50,6 @@ static void sort_one_block(t2sort_t *h, void *pkey, int nkey)
 static void 
 t2sort_write_block(t2sort_t *h, int nsort)
 {
-    printf("%s: nsort=%d nwrap=%ld\n", __func__, nsort, h->nwrap);
-    fflush(0);
     void *key, *p;
     key = t2sort_list_key(h, nsort);
     sort_one_block(h, key, nsort);
@@ -74,41 +72,32 @@ t2sort_write_block(t2sort_t *h, int nsort)
         t2sort_aio_write(h->xque[j].aio, h->fd, p, 
                 ntr*h->trlen, h->rtail*h->trlen);
         h->rtail += ntr;
-        printf("%s:  xhead=%d ntr=%d\n", __func__, h->xhead, 
-                h->xque[j].ntr); fflush(0);
         h->xhead++;
     }
     free(key);
 }
 
-// from rtail to rhead is in buffer
-// from rdone to rtail is aio_write submited, not finished
-// from 0 to rdone is on disk!
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    h->rhead += h->rdfly;       //TODO: change to nfly
-    printf("%s: h->rhead=%8ld tail=%8ld\n", __func__, h->rhead,
-            h->rtail); fflush(0);
-    if(h->rhead-h->rtail>=h->bntr) {   //delayed prev flush
+    h->rhead += h->rdfly;
+    if(h->rhead-h->rtail>=h->bntr)   //delayed prev flush
         t2sort_write_block(h, h->bntr); 
-    } 
-    void *praw;
+
+    //do not cross the block and memory boundary!
     *ntr = ring_wrap(h->rhead, (*ntr), h->nwrap);
-    if(h->rslot<(*ntr) && h->rtail>h->rdone) {
+    *ntr = MIN((*ntr), h->rtail+h->bntr-h->rhead);
+
+    //wait all to satisfy *ntr since user requested
+    while(h->rdone+h->nwrap<h->rhead+(*ntr)) {  //must wait
         assert(h->xtail<h->xhead);
-        int j=h->xtail%h->nxque;
-        printf("%s: xtail=%d ntr=%d\n", __func__,  h->xtail, 
-                    h->xque[j].ntr); fflush(0);
-        t2sort_aio_wait(h->xque[j].aio, 1);
-        free(h->xque[j].aio);
-        h->rslot+=h->xque[j].ntr;
-        h->rdone+=h->xque[j].ntr;
+        int x=h->xtail%h->nxque;
+        t2sort_aio_wait(h->xque[x].aio, 1);
+        free(h->xque[x].aio);
+        h->rdone+=h->xque[x].ntr;
         h->xtail++;
     }
-    *ntr = MIN(*ntr, h->rslot);
-    praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
+    void *praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
-    h->rslot -= h->rdfly;   //mark in use!
     return praw;
 }
 /**
