@@ -107,7 +107,6 @@ int t2sort_sort(t2sort_h h)
     h->_base = calloc(h->nwrap, h->trlen);
 
     //read for a block
-    h->rslot = h->nwrap;    //all buffer is empty
     h->rhead = 0;
     h->rtail = 0;
     h->rdone = 0;

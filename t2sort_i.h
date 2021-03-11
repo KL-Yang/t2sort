@@ -80,10 +80,8 @@ typedef struct t2sort_struct {
     int                 xtail;
 
 //////////////////
-    int                 rslot;
     int64_t             rhead;       //read key index
     int64_t             rtail;      //because of 2nd pass sort
-                                    //increase at multiple of bntr
     int64_t             rdone;      //read already given to user
 //////////////////////
 

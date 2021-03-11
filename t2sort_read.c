@@ -21,7 +21,6 @@ static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail)
     int ntr=0;
     while(head!=tail) {
         ntr += head->ntr;
-        printf("%s: ntr=%8d @ %p\n", __func__, ntr, head); fflush(0);
         head = head->next;
     };
     return ntr;
@@ -56,15 +55,14 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
             r->seek*h->trlen);
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
-    h->rslot -= r->ntr;
     printf("  %s: ntr=%d\n", __func__, r->ntr);
     rque_enque(&h->wait, r);    //attach to wait queue
 }
 
 //issue as much read as possibly can
 static void try_issue_read(t2sort_t *h) {
-    printf("%s: h->read @ %p\n", __func__, h->read); fflush(0);
-    while(h->read!=NULL && h->rslot>=h->read->ntr) { //can read
+    while(h->read!=NULL && 
+            (h->rdone+h->nwrap-h->rhead)>=h->read->ntr) { //can read
         t2sort_que_t *x;
         x = rque_deque(&h->read);   //deque
         x = rque_split(h, x);       //split if required
@@ -78,9 +76,10 @@ static void try_issue_read(t2sort_t *h) {
 //in sort_reset, prepare the first block
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
-    h->rslot += h->rdfly;   //land the flying buffer
     h->rdone += h->rdfly;   //h->ndata-=h->rdfly.
-    if(h->rdone==h->rtail) {    //h->ndata==0
+    //try to issue read right now!!!
+
+    if(h->rdone==h->rtail) {    //data exhausted
         if(rque_wait_ntr(&h->wait_head, h->wait)<h->bntr)
             try_issue_read(h); //need further issue read queue!
         int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
