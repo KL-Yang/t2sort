@@ -1,33 +1,6 @@
 #ifndef C_T2SORT_READ_T2SORT
 #define C_T2SORT_READ_T2SORT
 
-//  use two queue
-//  rhead,    rslot
-// 1. read que, deque for aio_read, and attach to wait que
-//      read que move forward rhead, and reduces rslot
-// 2. wait que, deque for aio_wait, and ready to end user
-//      wait que move forward rtail only
-//  rtail
-// 3. If user already retrieve the result, move forward
-//  rdone, and increase rslot to allow more read
-//
-//  from rdone->rtail is data readily availabe to give user
-//  to increase rtail, need access wait que for block and sort
-//  to increase rhead, need access read que.
-
-//TODO: only use those four variables
-// rslot: count empty slot for issue read queue
-// ndata: count ready data for t2sort_readraw API to give out
-// rhead: read que head pointer
-// rdone: t2sort_readraw API finished points
-//
-//when use for t2sort_write()
-// rslot: count empty slot for t2sort_writeraw API to give out
-// ndata: count ready data given to writeraw API
-// rdone: finished onto the disk
-// rhead: writerawAPI head pointer
-//
-
 //count how many trace in the waiting queue!
 static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
 {
