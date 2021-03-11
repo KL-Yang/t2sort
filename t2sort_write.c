@@ -1,5 +1,25 @@
 #ifndef C_T2SORT_WRITE_T2SORT
 #define C_T2SORT_WRITE_T2SORT
+
+static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
+{
+    void **ptr, *tmp; int *map;
+    tmp = malloc(h->trlen);
+    map = malloc(nkey*sizeof(int));
+    ptr = malloc(nkey*sizeof(void*));
+    for(int64_t i=0; i<nkey; i++) {
+        ptr[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->ptr;
+        ((t2sort_pay_t*)(pkey+i*h->klen))->idx = i;
+    }
+    qsort(pkey, nkey, h->klen, h->func_cmp_key);
+    for(int64_t i=0; i<nkey; i++)
+        map[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->idx;
+    t2sort_map_sort(ptr, nkey, map, h->trlen, tmp);
+    free(tmp);
+    free(map);
+    free(ptr);
+}
+
 /**
  * Return a list of all traces in the block for sort
  * This is no need, we need pointer as key's payload
@@ -43,29 +63,15 @@ static void
 t2sort_wblock_process(t2sort_t *h, pile_t *tail)
 {
     printf("%s:\n", __func__);
-    int ninst; void *key; void **ptr;
+    int ninst; void *key;
     //1.sort the block key and data
     key = block_keys_list(h, tail, &ninst);
-    ptr = malloc(ninst*sizeof(void*));
+    sort_one_block(h, key, ninst);
     for(int i=0; i<ninst; i++) {
-        ptr[i] = ((t2sort_pay_t*)(key+i*h->klen))->ptr;
-        ((t2sort_pay_t*)(key+i*h->klen))->idx = i;
-    }
-    qsort(key, ninst, h->klen, h->func_cmp_key);
-
-    int * map = malloc(ninst*sizeof(int));
-    void *tmp = malloc(h->trlen);
-    for(int i=0; i<ninst; i++) {
-        map[i] = ((t2sort_pay_t*)(key+i*h->klen))->idx;
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
     }
     write(h->fd_keys, key, ninst*h->klen);
-    t2sort_map_sort(ptr, ninst, map, h->trlen, tmp);
-    //dbg_map_sort2(ptr, ninst, map, h->trlen);
-    free(tmp);
-    free(map);
-    free(ptr);
     free(key);
     //2.write each pile on disk
     block_pile_write(h, tail);
@@ -103,13 +109,51 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
 }
 
 /**
+ * DO not use the pile concept!
+ * 1. rdone, traces already on disk, aio_wait of write finish
+ *       move forward by call aio_wait
+ * 2. rtail<-rdone,  aio_write issued but not waited yet.
+ * 3. rhead<-rtail, where writeraw API append new data!
+ * */
+//#define XXXXXXXXX
+#ifdef XXXXXXXXX
+void * t2sort_writeraw2(t2sort_h h, int *ntr)
+{
+    h->ndata += h->rdfly;       //TODO: change to nfly
+    if(h->ndata%h->bntr==0) {   //delayed prev flush
+        //one block from rhead-bntr \to rhead
+        //Get one block 
+        //sort
+        //issue write command
+    } else try_wait_write(); //to increase rslot!!!
+/*
+    if(h->pile->ntr==h->pntr) {    //delayed prev flush
+        h->pile->next->bpid = h->pile->bpid+1;
+        if((++h->wpile)%h->wioq==0) {
+            t2sort_wblock_process(h, h->pile);
+            h->pile->next->bpid = 0;
+        }
+
+        if(h->pile->next->ntr!=0)
+            t2sort_aio_wait(&h->pile->next->cb, 1);
+        t2sort_wpile_reset(h->pile->next);
+        h->pile = h->pile->next;
+    } //as later as possible to let user operate on praw
+*/
+    void *praw;
+    *ntr = MIN(*ntr, h->rslot);
+    *ntr = ring_wrap(h->rhead, (*ntr), h->nwrap);
+    praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
+    h->rdfly = *ntr;
+    h->nslot -= h->rdfly;   //mark in use!
+    return praw;
+}
+#endif
+/**
  *
  * */
 int t2sort_write(t2sort_h h, const void *p, int ntr)
 {
-    //dbg_keys_print(p, ntr, h->trlen, h->kdef[0].offset,
-    //        h->kdef[1].offset);
-
     int left=ntr, nput;
     void *praw; const void *psrc = p;
     while(left>0) {

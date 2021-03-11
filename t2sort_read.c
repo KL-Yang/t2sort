@@ -11,35 +11,28 @@
 // 3. If user already retrieve the result, move forward
 //  rdone, and increase rslot to allow more read
 //
-//  from rdone->rtail is readily availabe to give user
+//  from rdone->rtail is data readily availabe to give user
 //  to increase rtail, need access wait que for block and sort
 //  to increase rhead, need access read que.
 
+//TODO: only use those four variables
+// rslot: count empty slot for issue read queue
+// ndata: count ready data for t2sort_readraw API to give out
+// rhead: read que head pointer
+// rdone: t2sort_readraw API finished points
+//
+//when use for t2sort_write()
+// rslot: count empty slot for t2sort_writeraw API to give out
+// ndata: count ready data given to writeraw API
+// rdone: finished onto the disk
+// rhead: writerawAPI head pointer
+//
 //return the maximum size without wrap as first part!
 static int ring_wrap(int i, int d, int n)
 {
     if(i%n+d<=n)
         return d;
     return (n-(i%n));
-}
-
-static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
-{
-    void **ptr, *tmp; int *map;
-    tmp = malloc(h->trlen);
-    map = malloc(nkey*sizeof(int));
-    ptr = malloc(nkey*sizeof(void*));
-    for(int64_t i=0; i<nkey; i++) {
-        ptr[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->ptr;
-        ((t2sort_pay_t*)(pkey+i*h->klen))->idx = i;
-    }
-    qsort(pkey, nkey, h->klen, h->func_cmp_key);
-    for(int64_t i=0; i<nkey; i++)
-        map[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->idx;
-    t2sort_map_sort(ptr, nkey, map, h->trlen, tmp);
-    free(tmp);
-    free(map);
-    free(ptr);
 }
 
 //sort from h->rtail, +nsort
@@ -96,8 +89,8 @@ static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->rslot += h->rdfly;   //land the flying buffer
-    h->rdone += h->rdfly;
-    if(h->rdone==h->rtail) {
+    h->rdone += h->rdfly;   //h->ndata-=h->rdfly.
+    if(h->rdone==h->rtail) {    //h->ndata==0
         if(rque_wait_ntr(&h->wait_head, h->wait)<h->bntr)
             try_issue_read(h); //need further issue read queue!
         int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
