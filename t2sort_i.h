@@ -105,6 +105,11 @@ typedef struct t2sort_struct {
     t2sort_que_t        wait_head;  //waiting que
     t2sort_que_t      * wait;       //initiate to &wait_head;
 
+    t2sort_que_t      * xque;
+    int                 nxque;
+    int                 xhead;
+    int                 xtail;
+
 //////////////////
     int                 rslot;
     int64_t             rhead;       //read key index

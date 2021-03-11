@@ -68,6 +68,12 @@ t2sort_init(int trlen, int ndef, const t2sort_key_def_t *kdef,
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
     h->wait = &h->wait_head;
+
+    //1 for write key, 1 for extra
+    h->nxque = wioq+2;
+    h->xque  = calloc(h->nxque, sizeof(t2sort_que_t));
+    h->xhead = h->xtail = 0;
+
     return (t2sort_h)h;
 }
 #endif

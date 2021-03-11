@@ -137,21 +137,45 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
  * */
 //#define XXXXXXXXX
 #ifdef XXXXXXXXX
+static void 
+t2sort_write_block(t2sort_t *h, int nsort)
+{
+    void *key, *p;
+    key = t2sort_list_key(h, nsort);
+    sort_one_block(h, key, nsort);
+    for(int i=0; i<ninst; i++) {
+        ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
+        ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
+    }
+    write(h->fd_keys, key, ninst*h->klen);
+    //use ring buffer to handle the write queue!!!
+    for(int i=0, j; i<h->wioq; i++) {
+        assert(h->xhead-h->xtail<h->nxque);
+        j = h->xhead%h->nxque;
+        h->xque[j].aio = calloc(1, sizeof(t2sort_aio_t));
+        p = h->_base+(h->rtail%h->nwrap)*h->trlen;
+        t2sort_aio_write(h->xque[j].aio, h->fd, p, 
+                h->pntr*h->trlen, h->rtail*h->trlen);
+        h->xhead++;
+        h->rtail += h->pntr;
+    }
+    free(key);
+}
+
 void * t2sort_writeraw2(t2sort_h h, int *ntr)
 {
     h->rhead += h->rdfly;       //TODO: change to nfly
     if(h->rhead-h->rtail>=h->bntr==0) {   //delayed prev flush
-        t2sort_write_block(); 
-        //one block from rtail \to rtail+bntr
-        //sort and issue write command
+        t2sort_write_block(h, h->bntr); 
         h->rtail += h->bntr;
     } 
-
     void *praw;
     *ntr = ring_wrap(h->rhead, (*ntr), h->nwrap);
     if(h->rslot<(*ntr) && (*ntr)<1000) {
-        //wait for oldest write to finishes!
-        //this will increase h->rslot!!
+        int j=h->xtail%h->nxque;
+        t2sort_aio_wait(h->xque[j].aio, 1);
+        free(h->xque[j].aio);
+        h->xtail++;
     }
     *ntr = MIN(*ntr, h->rslot);
     praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
