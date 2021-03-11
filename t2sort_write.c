@@ -143,11 +143,11 @@ t2sort_write_block(t2sort_t *h, int nsort)
     void *key, *p;
     key = t2sort_list_key(h, nsort);
     sort_one_block(h, key, nsort);
-    for(int i=0; i<ninst; i++) {
+    for(int i=0; i<nsort; i++) {
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
     }
-    write(h->fd_keys, key, ninst*h->klen);
+    write(h->fd_keys, key, nsort*h->klen);
     //use ring buffer to handle the write queue!!!
     for(int i=0, j; i<h->wioq; i++) {
         assert(h->xhead-h->xtail<h->nxque);
@@ -165,7 +165,7 @@ t2sort_write_block(t2sort_t *h, int nsort)
 void * t2sort_writeraw2(t2sort_h h, int *ntr)
 {
     h->rhead += h->rdfly;       //TODO: change to nfly
-    if(h->rhead-h->rtail>=h->bntr==0) {   //delayed prev flush
+    if(h->rhead-h->rtail>=h->bntr) {   //delayed prev flush
         t2sort_write_block(h, h->bntr); 
         h->rtail += h->bntr;
     } 
@@ -180,7 +180,7 @@ void * t2sort_writeraw2(t2sort_h h, int *ntr)
     *ntr = MIN(*ntr, h->rslot);
     praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
-    h->nslot -= h->rdfly;   //mark in use!
+    h->rslot -= h->rdfly;   //mark in use!
     return praw;
 }
 #endif
