@@ -12,7 +12,6 @@ rque_new(t2sort_que_t *tail, int ntr, int dblk, int seek)
     xque->blk  = dblk;
     xque->seek = seek;
     tail->next = xque;
-    xque->id   = tail->id+1;
     return xque;
 }
 
@@ -71,8 +70,7 @@ int t2sort_sort(t2sort_h h)
     }
     for(;h->xtail<h->xhead; h->xtail++) {
         int j=h->xtail%h->nxque;
-        t2sort_aio_wait(h->xque[j].aio, 1);
-        free(h->xque[j].aio);
+        t2sort_aio_wait(&h->xque[j].aio, 1);
         h->rdone+=h->xque[j].ntr;
     }
     //read keys to the buffer for sorting!
@@ -105,6 +103,7 @@ int t2sort_sort(t2sort_h h)
     //for reference implementation
     h->nwrap = h->pntr*(h->wioq+1);
     h->_base = calloc(h->nwrap, h->trlen);
+    free(h->xque);
 
     //read for a block
     h->rhead = 0;

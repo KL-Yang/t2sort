@@ -42,14 +42,14 @@ typedef union t2sort_pay_struct {
 //queue generation algorith ensure ntr aligned with block size
 typedef struct t2sort_rque_struct t2sort_que_t;
 struct t2sort_rque_struct {
+    t2sort_que_t  * next;
+    t2sort_que_t  * prev;
     int             ntr;
     int             blk;    //read from which disk block
     //additional information for later aligned operation.
     off_t           seek;   //trace index of seeking
-    t2sort_aio_t  * aio;
-    t2sort_que_t  * next;
+    t2sort_aio_t    aio;
     int             flag;
-    int             id;     //for debug
 };
 #define T2SORT_RQUE_SUBMIT  (1<<0)
 #define T2SORT_RQUE_SPLIT   (1<<1)
@@ -74,6 +74,9 @@ typedef struct t2sort_struct {
     t2sort_que_t        wait_head;  //waiting que
     t2sort_que_t      * wait;       //initiate to &wait_head;
 
+//for t2sort_write, this is used as ring buffer.
+//for t2sort_read, this is used as linear list. Note read may
+//need split, and cannot use array!!!
     t2sort_que_t      * xque;
     int                 nxque;
     int                 xhead;

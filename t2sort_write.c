@@ -40,15 +40,7 @@ static void sort_one_block(t2sort_t *h, void *pkey, int nkey)
     free(ptr);
 }
 
-/**
- * DO not use the pile concept!
- * 1. rdone, traces already on disk, aio_wait of write finish
- *       move forward by call aio_wait
- * 2. rtail<-rdone,  aio_write issued but not waited yet.
- * 3. rhead<-rtail, where writeraw API append new data!
- * */
-static void 
-t2sort_write_block(t2sort_t *h, int nsort)
+static void t2sort_write_block(t2sort_t *h, int nsort)
 {
     void *key, *p;
     key = t2sort_list_key(h, nsort);
@@ -66,10 +58,9 @@ t2sort_write_block(t2sort_t *h, int nsort)
         ntr = MIN(h->pntr, nsort-i*h->pntr);
         if(ntr<=0) 
             break;
-        h->xque[j].aio = calloc(1, sizeof(t2sort_aio_t));
         h->xque[j].ntr = ntr;
         p = h->_base+(h->rtail%h->nwrap)*h->trlen;
-        t2sort_aio_write(h->xque[j].aio, h->fd, p, 
+        t2sort_aio_write(&h->xque[j].aio, h->fd, p, 
                 ntr*h->trlen, h->rtail*h->trlen);
         h->rtail += ntr;
         h->xhead++;
@@ -91,8 +82,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     while(h->rdone+h->nwrap<h->rhead+(*ntr)) {  //must wait
         assert(h->xtail<h->xhead);
         int x=h->xtail%h->nxque;
-        t2sort_aio_wait(h->xque[x].aio, 1);
-        free(h->xque[x].aio);
+        t2sort_aio_wait(&h->xque[x].aio, 1);
         h->rdone+=h->xque[x].ntr;
         h->xtail++;
     }

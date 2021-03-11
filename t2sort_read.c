@@ -20,8 +20,7 @@ static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
     int ntr=0;
     t2sort_que_t *newh=head->next;
     while(newh!=NULL && ntr<bntr) {
-        t2sort_aio_wait(newh->aio, 1);
-        free(newh->aio);
+        t2sort_aio_wait(&newh->aio, 1);
         ntr += newh->ntr;
         newh->flag |= T2SORT_RQUE_FINISH;
         free(newh);
@@ -39,8 +38,7 @@ static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
 static void rque_issue(t2sort_t *h, t2sort_que_t *r)
 {
     void *p = h->_base+(h->rhead%h->nwrap)*h->trlen;
-    r->aio = calloc(1, sizeof(t2sort_aio_t));
-    t2sort_aio_read(r->aio, h->fd, p, r->ntr*h->trlen,
+    t2sort_aio_read(&r->aio, h->fd, p, r->ntr*h->trlen,
             r->seek*h->trlen);
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
