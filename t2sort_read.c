@@ -59,7 +59,6 @@ static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
 }
 
 //in sort_reset, prepare the first block
-//h->rinst = h->pntr*h->wioq;
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->rslot += h->rdfly;   //land the flying buffer

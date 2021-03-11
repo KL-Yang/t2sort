@@ -58,17 +58,13 @@ typedef struct t2sort_struct {
     t2sort_key_def_t  * kdef;
     int                 ndef;
     int                 klen;
-    int                 bsize;      //user given buffer size
     int                 flag;
 //////////////////////////////////////////////
-    int                 wpile;      //how many pile processed
     int                 nblk;
     int64_t             nkey;   //todo remove
     int64_t             bntr;
     int64_t             pntr;
 //////////////////////////////////////////////
-    int                 rpos;       //read position wrap @ wrap
-    int                 slot;       //read slots available
     t2sort_que_t      * read;       //waiting que
     t2sort_que_t        wait_head;  //waiting que
     t2sort_que_t      * wait;       //initiate to &wait_head;
@@ -87,7 +83,6 @@ typedef struct t2sort_struct {
 //////////////////////
 
     int64_t             rdfly;      //readraw on the fly
-    int64_t             nsort;
     int64_t             nwrap;      //pntr*(wioq+1)
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);

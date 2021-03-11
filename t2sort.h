@@ -1,36 +1,6 @@
 #ifndef H_T2SORT_T2SORT
 #define H_T2SORT_T2SORT
 
-#ifdef __cplusplus
-/**
- * Public API, the rest will be hidden private API
- * */
-class T2Sort 
-{
-    private:    //TODO need to hide this part in opaque private class
-        int     flag;
-        //T2Map   map;
-        int     tfd;        /* Traces file descriptor */
-        int     kfd;        /* Unique Keys file */
-        void    init();     /* Initiation (once) before push! */
-
-    public:
-        T2Sort();
-        ~T2Sort(void);
-        void push(char *t, int n);      //normal push
-        void sort();
-        void reset();
-        void pull();                    //normal pull
-
-        char * push(int n, int *m);     //lazy push reload
-        char * pull(int n, int *m);     //lazy pull reload
-
-        //advanced setup function, must before first call of Push!
-        void set_file();
-        void set_key_file();            //not use key file yet! ignore it.
-};
-#endif
-
 typedef struct t2sort_struct * t2sort_h;
 
 typedef struct {
@@ -44,16 +14,16 @@ typedef t2sort_key_def_t t2sort_key_t;
 
 /**
  * @brief initiate the sort handle
- * @param trlen : trace length in bytes
- * @param nkey  : number of keys, maximum 3 group keys and 3 sub keys
- * @param keys  : definition of keys
- * @param bsize : memory buffer size in MB, approximated total size
- * @param wioq  : number of write IO queue
- * @param flag  : T2SORT_PUNCH_HOLE | T2SORT_GROUP_SORT | T2SORT_IO_URING
+ * @param tlen : trace length in bytes
+ * @param ndef : number of keys, maximum 3 group keys and 3 sub keys
+ * @param kdef : definition of keys
+ * @param bsiz : memory buffer size in MB, approximated total size
+ * @param wioq : number of write IO queue
+ * @param flag : T2SORT_PUNCH_HOLE | T2SORT_GROUP_SORT | T2SORT_IO_URING
  * use DIO and io_submit (Linux AIO) by default!
  * */
 t2sort_h
-t2sort_init(int trlen, int nkey, const t2sort_key_def_t *keys, int bsize, int wioq, int flag);
+t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef, int bsize, int wioq, int flag);
 
 /**
  * @brief zero copy write io, exposed internal buffer
