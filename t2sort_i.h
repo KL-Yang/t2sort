@@ -40,7 +40,6 @@ struct t2sort_rque_struct {
     int             blk;    //read from which disk block
     //additional information for later aligned operation.
     off_t           seek;   //trace index of seeking
-    int             mblk;   //build which block in memory
     t2sort_aio_t  * aio;
     t2sort_que_t  * next;
     int             flag;
