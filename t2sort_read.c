@@ -1,6 +1,20 @@
 #ifndef C_T2SORT_READ_T2SORT
 #define C_T2SORT_READ_T2SORT
 
+//remove the first item from the queue
+static t2sort_que_t * rque_deque(t2sort_que_t **head)
+{
+    t2sort_que_t *x = *head;
+    *head = (*head)->next;
+    x->next = NULL;
+    return x;
+}
+static void rque_enque(t2sort_que_t **tail, t2sort_que_t *x)
+{
+    (*tail)->next = x;
+    (*tail) = x;
+}
+
 //count how many trace in the waiting queue!
 static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
 {
@@ -29,6 +43,36 @@ static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
     if(newh==NULL) { *tail = head; } 
     else { assert(ntr==bntr); }
     return ntr;
+}
+
+/**
+ * @brief Issue the read request and transfer to wait queue
+ * */
+static void rque_issue(t2sort_t *h, t2sort_que_t *r)
+{
+    void *p = h->_base+(h->rhead%h->nwrap)*h->trlen;
+    r->aio = calloc(1, sizeof(t2sort_aio_t));
+    t2sort_aio_read(r->aio, h->fd, p, r->ntr*h->trlen,
+            r->seek*h->trlen);
+    r->flag |= T2SORT_RQUE_SUBMIT;
+    h->rhead += r->ntr;
+    h->rslot -= r->ntr;
+    printf("  %s: ntr=%d\n", __func__, r->ntr);
+    rque_enque(&h->wait, r);    //attach to wait queue
+}
+
+//issue as much read as possibly can
+static void try_issue_read(t2sort_t *h) {
+    printf("%s: h->read @ %p\n", __func__, h->read); fflush(0);
+    while(h->read!=NULL && h->rslot>=h->read->ntr) { //can read
+        t2sort_que_t *x;
+        x = rque_deque(&h->read);   //deque
+        x = rque_split(h, x);       //split if required
+        do {
+            rque_issue(h, x);
+            x = x->next;
+        } while(x!=NULL);
+    }
 }
 
 //in sort_reset, prepare the first block
