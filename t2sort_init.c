@@ -33,7 +33,7 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
 
     h->pntr  = floor(bsiz*1024L*1024L/((wioq+1)*tlen));
     h->bntr  = h->pntr*wioq;
-    h->nwrap = h->rslot = h->pntr*(wioq+1);
+    h->nwrap = h->pntr*(wioq+1);
     h->_base = malloc(h->nwrap*tlen);
     printf("%s: bsiz=%dMB pntr=%ld wioq=%d\n", __func__, bsiz, h->pntr, wioq);
 

@@ -65,15 +65,6 @@ t2sort_sort_rque(void *pkey, int nkey, int klen, int bntr)
 int t2sort_sort(t2sort_h h)
 {
     //flush piles of the last block
-    /*
-    if(h->pile->ntr!=0)
-        t2sort_wblock_process(h, h->pile);
-    //wait all piles write finishes
-    pile_t *head=h->pile->next, *tail=head;
-    do {
-        t2sort_aio_wait(&tail->cb, 1);
-        tail = tail->next;
-    } while(tail!=head); */
     h->rhead += h->rdfly;
     if(h->rhead>h->rtail) {
         t2sort_write_block(h, h->rhead-h->rtail);
@@ -82,7 +73,6 @@ int t2sort_sort(t2sort_h h)
         int j=h->xtail%h->nxque;
         t2sort_aio_wait(h->xque[j].aio, 1);
         free(h->xque[j].aio);
-        h->rslot+=h->xque[j].ntr;
         h->rdone+=h->xque[j].ntr;
     }
     //read keys to the buffer for sorting!
