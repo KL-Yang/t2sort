@@ -153,7 +153,6 @@ int t2sort_sort(t2sort_h h)
     free(key);
 
     //1. free wpile buffers
-    t2sort_free_wpile(h->pile);
     free(h->_base);
 
     //for reference implementation

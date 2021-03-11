@@ -3,13 +3,6 @@
 
 #define PAGE_SIZE 4096
 
-static void t2sort_free_wpile(pile_t *p)
-{
-    while(p->pid!=0) 
-        p=p->next;
-    free(p);
-}
-
 static int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
 {
     int pilesize;
@@ -21,16 +14,6 @@ static int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
     h->nwrap = h->pntr*(wioq+1);
     h->rslot = h->nwrap;
     h->_base = malloc(pilesize*(wioq+1));
-
-    //make write pile as double linked list
-    h->pile = calloc(wioq+1, sizeof(pile_t));
-    for(int i=0; i<wioq+1; i++) {
-        h->pile[i].pid  = i;
-        h->pile[i].next = &h->pile[(i+1)%(wioq+1)];
-        h->pile[i].prev = &h->pile[(i+wioq)%(wioq+1)];
-        h->pile[i].base = h->_base+i*pilesize;
-    }
-    h->pile->p = h->pile->base; //first pile
     return 0;
 }
 
