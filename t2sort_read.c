@@ -15,17 +15,6 @@ static void rque_enque(t2sort_que_t **tail, t2sort_que_t *x)
     (*tail) = x;
 }
 
-//count how many trace in the waiting queue!
-static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
-{
-    int ntr=0;
-    while(head!=tail) {
-        ntr += head->ntr;
-        head = head->next;
-    };
-    return ntr;
-}
-
 static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
 {
     int ntr=0;
@@ -77,17 +66,16 @@ static void try_issue_read(t2sort_t *h) {
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->rdone += h->rdfly;   //h->ndata-=h->rdfly.
+    try_issue_read(h);
     //try to issue read right now!!!
 
     if(h->rdone==h->rtail) {    //data exhausted
-        if(rque_wait_ntr(&h->wait_head, h->wait)<h->bntr)
-            try_issue_read(h); //need further issue read queue!
         int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
         void *pkey = t2sort_list_key(h, nsort);
         sort_one_block(h, pkey, nsort);
         free(pkey);
         h->rtail+=nsort;
-    } else try_issue_read(h);
+    }
 
     void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
@@ -99,10 +87,9 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
 
 int t2sort_read(t2sort_h h, void *p, int ntr)
 {
-    int left=ntr, nget; 
-    void *pdes = p; const void *praw;
+    int left=ntr; void *pdes=p; const void *praw;
     while(left>0) {
-        nget = left;
+        int nget = left;
         praw = t2sort_readraw(h, &nget);
         if(nget<=0)
             break;
