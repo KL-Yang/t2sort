@@ -71,8 +71,7 @@ typedef struct t2sort_struct {
     int64_t             pntr;
 //////////////////////////////////////////////
     t2sort_que_t      * read;       //waiting que
-    t2sort_que_t        wait_head;  //waiting que
-    t2sort_que_t      * wait;       //initiate to &wait_head;
+    t2sort_que_t        wait2;      //replace one first!
 
 //for t2sort_write, this is used as ring buffer.
 //for t2sort_read, this is used as linear list. Note read may

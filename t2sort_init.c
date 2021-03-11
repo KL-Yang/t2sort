@@ -43,7 +43,7 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     t2sort_init_scratch(h);
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
-    h->wait = &h->wait_head;
+    h->wait2.prev = h->wait2.next = &h->wait2;
 
     //1 for write key, 1 for extra
     h->nxque = wioq+2;

@@ -9,26 +9,21 @@ static t2sort_que_t * rque_deque(t2sort_que_t **head)
     x->next = NULL;
     return x;
 }
-static void rque_enque(t2sort_que_t **tail, t2sort_que_t *x)
-{
-    (*tail)->next = x;
-    (*tail) = x;
-}
 
-static int rque_wait_blk(t2sort_que_t *head, t2sort_que_t **tail, int bntr)
+static int rque_wait_blk2(t2sort_que_t *head, int bntr)
 {
     int ntr=0;
     t2sort_que_t *newh=head->next;
-    while(newh!=NULL && ntr<bntr) {
+    while(newh!=head && ntr<bntr) {
         t2sort_aio_wait(&newh->aio, 1);
         ntr += newh->ntr;
         newh->flag |= T2SORT_RQUE_FINISH;
-        free(newh);
+        printf("%s: free(%p)\n", __func__, newh); fflush(0);
+        void *temp = newh; //avoid use after free()!
         newh = newh->next;
+        free(temp);
     };
-    head->next = newh;
-    if(newh==NULL) { *tail = head; } 
-    else { assert(ntr==bntr); }
+    head->next = newh; newh->prev = head;
     return ntr;
 }
 
@@ -43,19 +38,22 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
     printf("  %s: ntr=%d\n", __func__, r->ntr);
-    rque_enque(&h->wait, r);    //attach to wait queue
+    t2sort_que_t *xtail = h->wait2.prev;
+    xtail->next = r; r->prev = xtail;
+    r->next = &h->wait2; h->wait2.prev = r;
 }
 
 //issue as much read as possibly can
 static void try_issue_read(t2sort_t *h) {
     while(h->read!=NULL && 
             (h->rdone+h->nwrap-h->rhead)>=h->read->ntr) { //can read
-        t2sort_que_t *x;
+        t2sort_que_t *x, *y;
         x = rque_deque(&h->read);   //deque
         x = rque_split(h, x);       //split if required
         do {
+            y = x->next;
             rque_issue(h, x);
-            x = x->next;
+            x = y;
         } while(x!=NULL);
     }
 }
@@ -68,7 +66,7 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     //try to issue read right now!!!
 
     if(h->rdone==h->rtail) {    //data exhausted
-        int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
+        int nsort = rque_wait_blk2(&h->wait2, h->bntr);
         void *pkey = t2sort_list_key(h, nsort);
         sort_one_block(h, pkey, nsort);
         free(pkey);
