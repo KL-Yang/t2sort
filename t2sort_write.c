@@ -1,5 +1,25 @@
 #ifndef C_T2SORT_WRITE_T2SORT
 #define C_T2SORT_WRITE_T2SORT
+//return the maximum size without wrap as first part!
+static int ring_wrap(int i, int d, int n)
+{
+    if(i%n+d<=n)
+        return d;
+    return (n-(i%n));
+}
+
+void * t2sort_list_key(t2sort_t *h, int nsort)
+{
+    void *buff, *pkey;
+    int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
+    pkey = malloc(nsort*h->klen);
+    buff = h->_base+(h->rtail%h->nwrap)*h->trlen;
+    h->func_cpy_key(buff, h->trlen, part1, h->kdef, pkey);
+    if(part1<nsort)
+        h->func_cpy_key(h->_base, h->trlen, nsort-part1, 
+                h->kdef, pkey+part1*h->klen);
+    return pkey;
+}
 
 static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
 {
@@ -119,30 +139,21 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
 #ifdef XXXXXXXXX
 void * t2sort_writeraw2(t2sort_h h, int *ntr)
 {
-    h->ndata += h->rdfly;       //TODO: change to nfly
-    if(h->ndata%h->bntr==0) {   //delayed prev flush
-        //one block from rhead-bntr \to rhead
-        //Get one block 
-        //sort
-        //issue write command
-    } else try_wait_write(); //to increase rslot!!!
-/*
-    if(h->pile->ntr==h->pntr) {    //delayed prev flush
-        h->pile->next->bpid = h->pile->bpid+1;
-        if((++h->wpile)%h->wioq==0) {
-            t2sort_wblock_process(h, h->pile);
-            h->pile->next->bpid = 0;
-        }
+    h->rhead += h->rdfly;       //TODO: change to nfly
+    if(h->rhead-h->rtail>=h->bntr==0) {   //delayed prev flush
+        t2sort_write_block(); 
+        //one block from rtail \to rtail+bntr
+        //sort and issue write command
+        h->rtail += h->bntr;
+    } 
 
-        if(h->pile->next->ntr!=0)
-            t2sort_aio_wait(&h->pile->next->cb, 1);
-        t2sort_wpile_reset(h->pile->next);
-        h->pile = h->pile->next;
-    } //as later as possible to let user operate on praw
-*/
     void *praw;
-    *ntr = MIN(*ntr, h->rslot);
     *ntr = ring_wrap(h->rhead, (*ntr), h->nwrap);
+    if(h->rslot<(*ntr) && (*ntr)<1000) {
+        //wait for oldest write to finishes!
+        //this will increase h->rslot!!
+    }
+    *ntr = MIN(*ntr, h->rslot);
     praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
     h->rdfly = *ntr;
     h->nslot -= h->rdfly;   //mark in use!

@@ -27,32 +27,6 @@
 // rdone: finished onto the disk
 // rhead: writerawAPI head pointer
 //
-//return the maximum size without wrap as first part!
-static int ring_wrap(int i, int d, int n)
-{
-    if(i%n+d<=n)
-        return d;
-    return (n-(i%n));
-}
-
-//sort from h->rtail, +nsort
-static void t2sort_one_rblock(t2sort_t *h, int nsort)
-{
-    void *buff, *pkey;
-    int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
-
-    pkey = malloc(nsort*h->klen);
-    buff = h->_base+(h->rtail%h->nwrap)*h->trlen;
-    h->func_cpy_key(buff, h->trlen, part1, h->kdef, pkey);
-    printf("%s: part1=%d nsort=%d\n", __func__, part1, nsort);
-    fflush(0);
-    if(part1<nsort) {
-        h->func_cpy_key(h->_base, h->trlen, nsort-part1, 
-                h->kdef, pkey+part1*h->klen);
-    }
-    sort_one_block(h, pkey, nsort);
-    free(pkey);
-}
 
 //count how many trace in the waiting queue!
 static int rque_wait_ntr(t2sort_que_t *head, t2sort_que_t *tail) 
@@ -94,7 +68,9 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
         if(rque_wait_ntr(&h->wait_head, h->wait)<h->bntr)
             try_issue_read(h); //need further issue read queue!
         int nsort = rque_wait_blk(&h->wait_head, &h->wait, h->bntr);
-        t2sort_one_rblock(h, nsort);
+        void *pkey = t2sort_list_key(h, nsort);
+        sort_one_block(h, pkey, nsort);
+        free(pkey);
         h->rtail+=nsort;
     } else try_issue_read(h);
 
