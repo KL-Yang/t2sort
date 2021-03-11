@@ -18,6 +18,8 @@ static int t2sort_init_wpile(t2sort_t *h, int bsize, int trlen, int wioq)
     printf("%s: bsize=%d pntr=%ld wioq=%d\n", 
             __func__, bsize, h->pntr, wioq);
     pilesize = PAGE_SIZE*(floor(h->pntr*trlen/PAGE_SIZE)+2);
+    h->nwrap = h->pntr*(wioq+1);
+    h->rslot = h->nwrap;
     h->_base = malloc(pilesize*(wioq+1));
 
     //make write pile as double linked list
