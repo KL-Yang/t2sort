@@ -50,10 +50,12 @@ struct t2sort_rque_struct {
     off_t           seek;   //trace index of seeking
     t2sort_aio_t    aio;
     int             flag;
+    int             id;
 };
 #define T2SORT_RQUE_SUBMIT  (1<<0)
 #define T2SORT_RQUE_SPLIT   (1<<1)
-#define T2SORT_RQUE_FINISH  (1<<2)
+#define T2SORT_RQUE_ALLOC   (1<<2)
+#define T2SORT_RQUE_FINISH  (1<<3)
 
 typedef struct t2sort_struct {
     int                 fd;         //data file
@@ -70,7 +72,8 @@ typedef struct t2sort_struct {
     int64_t             bntr;
     int64_t             pntr;
 //////////////////////////////////////////////
-    t2sort_que_t      * read;       //waiting que
+    //t2sort_que_t      * read;       //waiting que
+    t2sort_que_t        read2;       //waiting que
     t2sort_que_t        wait2;      //replace one first!
 
 //for t2sort_write, this is used as ring buffer.
