@@ -21,7 +21,7 @@ static t2sort_que_t *
 t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey, 
         int klen, int bntr, int nblk, int pntr)
 {
-    nblk = ceilf(nkey*1.0f/bntr); int ysum=0, zsum=0;
+    nblk = ceilf(nkey*1.0f/bntr);
     int f[nblk], n[nblk], x=0; t2sort_que_t *xque;
     xque = calloc(2*nblk*nblk, sizeof(t2sort_que_t));
     memset(f, 0, nblk*sizeof(int));
@@ -31,7 +31,6 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
         for(int j=0; j<xntr; j++, pkey+=klen)
             n[((t2sort_pay_t*)pkey)->bpi.blk]++;
         for(int i=0; i<nblk; i++) {
-            zsum += n[i];
             while(n[i]!=0) {
                 xque[x].ntr  = MIN(n[i], pntr);
                 xque[x].blk  = i;
@@ -40,14 +39,10 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
                 xque_enque(head, &xque[x]);
-                printf("%s: id=%4d ntr=%d\n", __func__, x, 
-                        xque[x].ntr);
-                ysum += xque[x].ntr;
                 x++;
             }
         }
     } assert(x<=2*nblk*nblk);
-    printf("%s: ysum=%d zsum=%d x=%d\n", __func__, ysum, zsum, x);
     return realloc(xque, x*sizeof(t2sort_que_t));
 }
 
@@ -71,14 +66,11 @@ int t2sort_sort(t2sort_h h)
     printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
     //abort();
 
-    void *key;
-    key = malloc(h->nkey*h->klen);
+    void *key = malloc(h->nkey*h->klen);
     pread(h->fd_keys, key, h->nkey*h->klen, 0);
     //3. sort all keys
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
     //4. build read queue!
-    //h->read = t2sort_sort_rque(key, h->nkey, h->klen, 
-    //            h->pntr*h->wioq);
     t2sort_sort_rque2(&h->read2, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr);
     //debug
@@ -86,8 +78,6 @@ int t2sort_sort(t2sort_h h)
     t2sort_que_t *xhead = h->read2.next;
     while(xhead!=&h->read2) {
         xsum += xhead->ntr;
-        printf("xhead->id=%6d  ntr=%8d sum=%8d\n", xhead->id,
-                    xhead->ntr, xsum);
         xhead = xhead->next;
     }
     printf("%s:total rque ntr=%d\n", __func__, xsum);
@@ -95,11 +85,6 @@ int t2sort_sort(t2sort_h h)
     //abort();
 
     //1. free wpile buffers
-    free(h->_base);
-
-    //for reference implementation
-    h->nwrap = h->pntr*(h->wioq+1);
-    h->_base = calloc(h->nwrap, h->trln);
     free(h->xque);
 
     //read for a block
