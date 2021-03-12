@@ -52,7 +52,8 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     for(int i=0; i<nsort; i+=h->pntr) {
         t2sort_que_t *xque = xque_deque(&h->read); 
         assert(xque!=&h->read); //que exhausted
-        xque->ntr = MIN(h->pntr, nsort-i);
+        //xque->ntr = MIN(h->pntr, nsort-i);
+        xque->ntr = h->pntr;    //last pile may have some garbage
         p = h->_base+(h->rtail%h->wrap)*h->trln;
         t2sort_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
                 h->rtail*h->trln);
