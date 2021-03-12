@@ -87,7 +87,7 @@ typedef struct t2sort_struct {
     int64_t             rdone;      //read already given to user
 //////////////////////
 
-    int64_t             rdfly;      //readraw on the fly
+    int64_t             nfly;      //readraw on the fly
     int64_t             wrap;      //pntr*(wioq+1)
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);

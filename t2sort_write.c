@@ -70,7 +70,7 @@ static void t2sort_write_block(t2sort_t *h, int nsort)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    h->rhead += h->rdfly;
+    h->rhead += h->nfly;
     if(h->rhead-h->rtail>=h->bntr)   //delayed prev flush
         t2sort_write_block(h, h->bntr); 
 
@@ -87,7 +87,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         h->xtail++;
     }
     void *praw = h->_base+(h->rhead%h->wrap)*h->trln;
-    h->rdfly = *ntr;
+    h->nfly = *ntr;
     return praw;
 }
 /**

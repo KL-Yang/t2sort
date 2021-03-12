@@ -61,9 +61,8 @@ static void try_issue_read2(t2sort_t *h, t2sort_que_t *head)
 //in sort_reset, prepare the first block
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
-    h->rdone += h->rdfly;   //h->ndata-=h->rdfly.
+    h->rdone += h->nfly;
     try_issue_read2(h, &h->read2);
-    //try to issue read right now!!!
 
     if(h->rdone==h->rtail) {    //data exhausted
         int nsort = rque_wait_blk2(&h->wait2, h->bntr);
@@ -73,11 +72,10 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
         h->rtail+=nsort;
     }
 
-    void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
     *ntr = ring_wrap(h->rdone, (*ntr), h->wrap);
-    praw = h->_base+(h->rdone%h->wrap)*h->trln;
-    h->rdfly = *ntr;
+    void *praw = h->_base+(h->rdone%h->wrap)*h->trln;
+    h->nfly = *ntr;
     return praw;
 }
 
