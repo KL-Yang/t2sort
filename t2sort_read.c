@@ -30,9 +30,9 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
     printf("  %s: ntr=%d\n", __func__, r->ntr);
-    t2sort_que_t *xtail = h->wait2.prev;
+    t2sort_que_t *xtail = h->wait.prev;
     xtail->next = r; r->prev = xtail;
-    r->next = &h->wait2; h->wait2.prev = r;
+    r->next = &h->wait; h->wait.prev = r;
 }
 
 //deque one, issue no wrap read,
@@ -65,7 +65,7 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     try_issue_read2(h, &h->read);
 
     if(h->rdone==h->rtail) {    //data exhausted
-        int nsort = rque_wait_blk2(&h->wait2, h->bntr);
+        int nsort = rque_wait_blk2(&h->wait, h->bntr);
         void *pkey = t2sort_list_key(h, nsort);
         sort_one_block(h, pkey, nsort);
         free(pkey);
