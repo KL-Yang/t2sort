@@ -30,6 +30,22 @@ static int t2_multiple(int pagemask, int trln)
     return multiple;
 }
 
+//add to tail
+static void xque_enque(t2sort_que_t *head, t2sort_que_t *x)
+{
+    t2sort_que_t *tail = head->prev;
+    tail->next = x; x->prev = tail;
+    head->prev = x; x->next = head;
+}
+//remove from head
+t2sort_que_t * xque_deque(t2sort_que_t *head)
+{
+    t2sort_que_t *item = head->next;
+    head->next = item->next;    //note item may be head!
+    return item;
+}
+
+
 static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 {
     int scale, xsize;
@@ -87,6 +103,8 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->nxque = wioq+2;
     h->xque  = calloc(h->nxque, sizeof(t2sort_que_t));
     h->xhead = h->xtail = 0;
+    for(int i=0; i<h->nxque; i++) 
+        xque_enque(&h->read, &h->xque[i]);
 
     return (t2sort_h)h;
 }

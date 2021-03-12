@@ -1,21 +1,6 @@
 #ifndef C_T2SORT_RESET_T2SORT
 #define C_T2SORT_RESET_T2SORT
 
-//add to tail
-static void xque_enque(t2sort_que_t *head, t2sort_que_t *x)
-{
-    t2sort_que_t *tail = head->prev;
-    tail->next = x; x->prev = tail;
-    head->prev = x; x->next = head;
-}
-//remove from head
-t2sort_que_t * xque_deque(t2sort_que_t *head)
-{
-    t2sort_que_t *item = head->next;
-    head->next = item->next;    //note item may be head!
-    return item;
-}
-
 //build the queue, break all read large than pntr!
 static t2sort_que_t *
 t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey, 
@@ -68,7 +53,9 @@ int t2sort_sort(t2sort_h h)
     pread(h->fd_keys, key, h->nkey*h->klen, 0);
     //3. sort all keys
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
-    //4. build read queue!
+    //4. clear and rebuild read queue!
+    h->wait.prev = h->wait.next = &h->wait;
+    h->read.prev = h->read.next = &h->read;
     t2sort_sort_rque2(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr);
     //debug

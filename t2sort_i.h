@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -46,7 +45,7 @@ typedef union t2sort_pay_struct {
 
 //queue generation algorith ensure ntr aligned with block size
 typedef struct t2sort_rque_struct t2sort_que_t;
-struct t2sort_rque_struct {
+struct t2sort_rque_struct { //TODO: rename to t2_que_t
     t2sort_que_t      * next;
     t2sort_que_t      * prev;
     int                 ntr;
