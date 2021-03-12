@@ -88,7 +88,7 @@ typedef struct t2sort_struct {
 //////////////////////
 
     int64_t             rdfly;      //readraw on the fly
-    int64_t             nwrap;      //pntr*(wioq+1)
+    int64_t             wrap;      //pntr*(wioq+1)
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);

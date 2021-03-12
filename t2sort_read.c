@@ -24,7 +24,7 @@ static int rque_wait_blk2(t2sort_que_t *head, int bntr)
  * */
 static void rque_issue(t2sort_t *h, t2sort_que_t *r)
 {
-    void *p = h->_base+(h->rhead%h->nwrap)*h->trln;
+    void *p = h->_base+(h->rhead%h->wrap)*h->trln;
     t2sort_aio_read(&r->aio, h->fd, p, r->ntr*h->trln,
             r->seek*h->trln);
     r->flag |= T2SORT_RQUE_SUBMIT;
@@ -41,9 +41,9 @@ static void try_issue_read2(t2sort_t *h, t2sort_que_t *head)
 {
     t2sort_que_t *x, *y; int n, r;
     while(head->next!=head && //can read
-            h->rdone+h->nwrap>=h->rhead+head->next->ntr) {
+            h->rdone+h->wrap>=h->rhead+head->next->ntr) {
         x = xque_deque(head); assert(x!=head && x->ntr!=0);
-        n = ring_wrap(h->rhead, x->ntr, h->nwrap);
+        n = ring_wrap(h->rhead, x->ntr, h->wrap);
         r = x->ntr-n;
         x->ntr = n;
         rque_issue(h, x); //TODO: if partial issue return a flag!
@@ -75,8 +75,8 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
 
     void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
-    *ntr = ring_wrap(h->rdone, (*ntr), h->nwrap);
-    praw = h->_base+(h->rdone%h->nwrap)*h->trln;
+    *ntr = ring_wrap(h->rdone, (*ntr), h->wrap);
+    praw = h->_base+(h->rdone%h->wrap)*h->trln;
     h->rdfly = *ntr;
     return praw;
 }

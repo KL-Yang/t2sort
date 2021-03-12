@@ -11,9 +11,9 @@ static int ring_wrap(int i, int d, int n)
 void * t2sort_list_key(t2sort_t *h, int nsort)
 {
     void *buff, *pkey;
-    int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
+    int part1 = ring_wrap(h->rtail, nsort, h->wrap);
     pkey = malloc(nsort*h->klen);
-    buff = h->_base+(h->rtail%h->nwrap)*h->trln;
+    buff = h->_base+(h->rtail%h->wrap)*h->trln;
     h->func_cpy_key(buff, h->trln, part1, h->kdef, pkey);
     if(part1<nsort)
         h->func_cpy_key(h->_base, h->trln, nsort-part1, 
@@ -59,7 +59,7 @@ static void t2sort_write_block(t2sort_t *h, int nsort)
         if(ntr<=0) 
             break;
         h->xque[j].ntr = ntr;
-        p = h->_base+(h->rtail%h->nwrap)*h->trln;
+        p = h->_base+(h->rtail%h->wrap)*h->trln;
         t2sort_aio_write(&h->xque[j].aio, h->fd, p, 
                 ntr*h->trln, h->rtail*h->trln);
         h->rtail += ntr;
@@ -75,18 +75,18 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         t2sort_write_block(h, h->bntr); 
 
     //do not cross the block and memory boundary!
-    *ntr = ring_wrap(h->rhead, (*ntr), h->nwrap);
+    *ntr = ring_wrap(h->rhead, (*ntr), h->wrap);
     *ntr = MIN((*ntr), h->rtail+h->bntr-h->rhead);
 
     //wait all to satisfy *ntr since user requested
-    while(h->rdone+h->nwrap<h->rhead+(*ntr)) {  //must wait
+    while(h->rdone+h->wrap<h->rhead+(*ntr)) {  //must wait
         assert(h->xtail<h->xhead);
         int x=h->xtail%h->nxque;
         t2sort_aio_wait(&h->xque[x].aio, 1);
         h->rdone+=h->xque[x].ntr;
         h->xtail++;
     }
-    void *praw = h->_base+(h->rhead%h->nwrap)*h->trln;
+    void *praw = h->_base+(h->rhead%h->wrap)*h->trln;
     h->rdfly = *ntr;
     return praw;
 }

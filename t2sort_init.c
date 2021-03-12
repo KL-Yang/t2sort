@@ -25,15 +25,15 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     int bsiz, int wioq, int flag)
 {
     t2sort_t *h = calloc(1, sizeof(t2sort_t));
-    h->trln  = tlen;
-    h->ndef  = ndef;
-    h->kdef  = calloc(ndef, sizeof(t2sort_key_def_t));
+    h->trln = tlen;
+    h->ndef = ndef;
+    h->kdef = calloc(ndef, sizeof(t2sort_key_def_t));
     memcpy(h->kdef, kdef, ndef*sizeof(t2sort_key_def_t));
 
-    h->pntr  = floor(bsiz*1024L*1024L/((wioq+1)*tlen));
-    h->bntr  = h->pntr*wioq;
-    h->nwrap = h->pntr*(wioq+1);
-    h->_base = malloc(h->nwrap*tlen);
+    h->pntr = floor(bsiz*1024L*1024L/((wioq+1)*tlen));
+    h->bntr = h->pntr*wioq;
+    h->wrap = h->pntr*(wioq+1);
+    h->_base = malloc(h->wrap*tlen);
     printf("%s: bsiz=%dMB pntr=%ld wioq=%d\n", __func__, bsiz, h->pntr, wioq);
 
     h->wioq  = wioq;
