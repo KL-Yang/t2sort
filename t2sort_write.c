@@ -20,7 +20,7 @@ void * t2sort_list_key(t2sort_t *h, int nsort)
     return pkey;
 }
 
-static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
+static void t2_sort_block(t2sort_t *h, void *pkey, int nkey) 
 {
     void **ptr, *tmp; int *map;
     tmp = malloc(h->trln);
@@ -39,11 +39,11 @@ static void sort_one_block(t2sort_t *h, void *pkey, int nkey)
     free(ptr);
 }
 
-static void t2sort_write_block(t2sort_t *h, int nsort)
+static void t2_flush_block(t2sort_t *h, int nsort)
 {
     void *key, *p;
     key = t2sort_list_key(h, nsort);
-    sort_one_block(h, key, nsort);
+    t2_sort_block(h, key, nsort);
     for(int i=0; i<nsort; i++) {
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
@@ -69,11 +69,10 @@ static void t2sort_write_block(t2sort_t *h, int nsort)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    h->rhead += h->nfly;
-    if(h->rhead-h->rtail>=h->bntr)   //delayed prev flush
-        t2sort_write_block(h, h->bntr); 
+    if((h->rhead+=h->nfly)>=h->rtail+h->bntr)   //delayed flush
+        t2_flush_block(h, h->bntr); 
 
-    //do not cross the block and memory boundary!
+    //do not cross block and ring buffer boundary!
     *ntr = ring_wrap(h->rhead, (*ntr), h->wrap);
     *ntr = MIN((*ntr), h->rtail+h->bntr-h->rhead);
 
@@ -89,9 +88,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     h->nfly = *ntr;
     return praw;
 }
-/**
- *
- * */
+
 int t2sort_write(t2sort_h h, const void *p, int ntr)
 {
     int left=ntr, nput;
@@ -106,5 +103,4 @@ int t2sort_write(t2sort_h h, const void *p, int ntr)
     };
     return (ntr-left);
 }
-
 #endif

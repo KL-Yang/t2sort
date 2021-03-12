@@ -50,9 +50,8 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
-    h->rhead += h->nfly;
-    if(h->rhead>h->rtail)
-        t2sort_write_block(h, h->rhead-h->rtail);
+    if((h->rhead+=h->nfly)>h->rtail)
+        t2_flush_block(h, h->rhead-h->rtail);
     for(;h->xtail<h->xhead; h->xtail++) {
         int j=h->xtail%h->nxque;
         t2sort_aio_wait(&h->xque[j].aio, 1);
