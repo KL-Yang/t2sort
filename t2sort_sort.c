@@ -44,15 +44,14 @@ int t2sort_sort(t2sort_h h)
     };
     free(h->xque);
 
-    //2. read all keys in memory, may exceed bsize.
     h->nkey = h->rhead;
     dbg_blocks_check(h);
     printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
     //abort();
 
+    //3. read and sort all keys
     void *key = malloc(h->nkey*h->klen);
     pread(h->fd_keys, key, h->nkey*h->klen, 0);
-    //3. sort all keys
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;

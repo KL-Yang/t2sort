@@ -13,8 +13,8 @@ check_file_order(int fd, int ninst, int trlen,
             kdef[0].offset, kdef[1].offset);
     dbg_data_valid(buff, ninst, trlen, 
             kdef[0].offset, kdef[1].offset);
-    dbg_keys_print(buff, ninst, trlen, 
-            kdef[0].offset, kdef[1].offset);
+    //dbg_keys_print(buff, ninst, trlen, 
+    //        kdef[0].offset, kdef[1].offset);
     free(buff);
 }
 

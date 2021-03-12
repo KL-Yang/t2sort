@@ -9,20 +9,19 @@ static int ring_wrap(int i, int d, int n)   //maximum d without wrap
 
 void * t2_list_keys(t2sort_t *h, int nsort)
 {
-    void *buff, *pkey; int part;
-    part = ring_wrap(h->rtail, nsort, h->wrap);
-    pkey = malloc(nsort*h->klen);
-    buff = h->_base+(h->rtail%h->wrap)*h->trln;
-    h->func_cpy_key(buff, h->trln, part, h->kdef, pkey);
-    if(part<nsort)
-        h->func_cpy_key(h->_base, h->trln, nsort-part, 
-                h->kdef, pkey+part*h->klen);
+    int nowrap = ring_wrap(h->rtail, nsort, h->wrap);
+    void *pkey = malloc(nsort*h->klen);
+    void *buff = h->_base+(h->rtail%h->wrap)*h->trln;
+    h->func_cpy_key(buff, h->trln, nowrap, h->kdef, pkey);
+    if(nowrap<nsort)
+        h->func_cpy_key(h->_base, h->trln, nsort-nowrap, 
+                h->kdef, pkey+nowrap*h->klen);
     return pkey;
 }
 
 static void t2_sort_block(t2sort_t *h, void *pkey, int nkey) 
 {
-    void **ptr, *tmp; int *map;
+    void **ptr, *tmp; int *map; //TODO: pre-allocate in init
     tmp = malloc(h->trln);
     map = malloc(nkey*sizeof(int));
     ptr = malloc(nkey*sizeof(void*));
@@ -75,7 +74,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     //wait all to satisfy *ntr since user requested
     while(h->rdone+h->wrap<h->rhead+(*ntr)) {  //must wait
         t2sort_que_t *xque = xque_deque(&h->wait);
-        assert(xque!=&h->wait);
+        assert(xque!=&h->wait && xque->ntr);
         t2sort_aio_wait(&xque->aio, 1);
         h->rdone+=xque->ntr;
         memset(xque, 0, sizeof(t2sort_que_t));  //for safty!

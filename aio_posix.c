@@ -16,6 +16,11 @@ t2sort_aio_write(t2sort_aio_t *t2cb, int fd, void *buf,
     t2cb->paio.aio_buf    = buf;
     t2cb->paio.aio_nbytes = count;
     t2cb->paio.aio_offset = offset;
+    if(offset%PAGE_SIZE!=0 || count%PAGE_SIZE!=0 ||
+        (((int64_t)buf)&0x00000FFF)!=0) {
+        printf("%s: not aligned (offset=%ld count=%ld)@%p\n",
+            __func__, offset, count, buf);
+    }
     aio_write(&t2cb->paio);
 }
 
