@@ -17,38 +17,45 @@
 
 #define MIN(a,b)    ((a)>(b)?(b):(a))
 #define MAX(a,b)    ((a)>(b)?(a):(b))
+#define PAGE_SIZE   4096
+#define PAGE_MASK   12  //1<<PAGE_MASK==PAGE_SIZE
+/*
+typedef struct {
+    void      *_base;   //memory allocation start
+    size_t     _size;   //allocation size
+    void      * p;      //trace start, p>_base
+    int         ntr;    //number of trace, capacity
+    //p+ntr*trln may ge _base+_size, but less than a page
+} t2_mem_t ;    //_base->p is to save spill over
 
-/* typedef struct {
-    void      *_base;
-    void      * p;
-    int         ntr;
-} t2_blk_t; */
+typedef struct t2_blk_struct t2_blk_t;
+struct t2_blk_struct {
+    t2_blk_t  * prev, *next;  
+    t2_mem_t    mem[2];
+}; */
 
 typedef struct t2sort_aio_struct {
-    struct aiocb    paio;
+    struct aiocb        paio;
 } t2sort_aio_t;
 
 typedef union t2sort_pay_struct {
-    void          * ptr;    //pointer
-    int64_t         idx;    //index
-    struct {
-        int32_t     blk;    //block id
-        int32_t     idx;    //index in the block!
-    } bpi;  //Block-Pile-Information
+    void              * ptr;    //pointer
+    int64_t             idx;    //index
+    struct { int32_t    blk,idx;}bpi;  //Block-Pile-Information
 } t2sort_pay_t;
 
 //queue generation algorith ensure ntr aligned with block size
 typedef struct t2sort_rque_struct t2sort_que_t;
 struct t2sort_rque_struct {
-    t2sort_que_t  * next;
-    t2sort_que_t  * prev;
-    int             ntr;
-    int             blk;    //read from which disk block
+    t2sort_que_t      * next;
+    t2sort_que_t      * prev;
+    int                 ntr;
+    int                 blk;    //read from which disk block
     //additional information for later aligned operation.
-    off_t           seek;   //trace index of seeking
-    t2sort_aio_t    aio;
-    int             flag;
-    int             id;
+    off_t               seek;   //trace index of seeking
+    t2sort_aio_t        aio;
+    int                 flag;
+    int                 id;
 };
 #define T2SORT_RQUE_SUBMIT  (1<<0)
 #define T2SORT_RQUE_SPLIT   (1<<1)
