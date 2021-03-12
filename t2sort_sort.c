@@ -70,12 +70,12 @@ int t2sort_sort(t2sort_h h)
     //3. sort all keys
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
     //4. build read queue!
-    t2sort_sort_rque2(&h->read2, key, h->nkey, h->klen, 
+    t2sort_sort_rque2(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr);
     //debug
     int xsum=0; 
-    t2sort_que_t *xhead = h->read2.next;
-    while(xhead!=&h->read2) {
+    t2sort_que_t *xhead = h->read.next;
+    while(xhead!=&h->read) {
         xsum += xhead->ntr;
         xhead = xhead->next;
     }

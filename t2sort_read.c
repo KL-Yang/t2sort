@@ -62,7 +62,7 @@ static void try_issue_read2(t2sort_t *h, t2sort_que_t *head)
 const void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->rdone += h->nfly;
-    try_issue_read2(h, &h->read2);
+    try_issue_read2(h, &h->read);
 
     if(h->rdone==h->rtail) {    //data exhausted
         int nsort = rque_wait_blk2(&h->wait2, h->bntr);
