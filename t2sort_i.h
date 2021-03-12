@@ -64,6 +64,7 @@ typedef struct t2sort_struct {
     int                 ndef;
     int                 klen;
     int                 flag;
+    char                fd_name[64];
 //////////////////////////////////////////////
     int                 nblk;
     int64_t             nkey;   //todo remove

@@ -8,14 +8,13 @@
  * */
 static void t2sort_init_scratch(t2sort_t *h)
 {
-    char scratchname_d[]="delete_d_XXXXXX";
-    mkstemp(scratchname_d);
+    strcpy(h->fd_name, "delete_d_XXXXXX");
+    mkstemp(h->fd_name);
     char scratchname_k[]="delete_k_XXXXXX";
     mkstemp(scratchname_k);
     printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
-            scratchname_d, scratchname_k);
-    h->fd = open(scratchname_d, O_RDWR|O_CREAT, 
-                    S_IRWXU|S_IRWXG|S_IRWXO);
+            h->fd_name, scratchname_k);
+    h->fd = open(h->fd_name, O_RDWR|O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO);
     h->fd_keys = open(scratchname_k, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);
 }
