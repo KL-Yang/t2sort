@@ -42,7 +42,7 @@ typedef union t2sort_pay_struct {
     void              * ptr;    //pointer
     int64_t             idx;    //index
     struct { int32_t    blk,idx;}bpi;  //Block-Pile-Information
-} t2sort_pay_t;
+} t2_pay_t;
 
 //queue generation algorith ensure ntr aligned with block size
 typedef struct t2sort_rque_struct t2sort_que_t;

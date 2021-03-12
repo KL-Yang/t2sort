@@ -27,12 +27,12 @@ static void t2_sort_block(t2sort_t *h, void *pkey, int nkey)
     map = malloc(nkey*sizeof(int));
     ptr = malloc(nkey*sizeof(void*));
     for(int64_t i=0; i<nkey; i++) {
-        ptr[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->ptr;
-        ((t2sort_pay_t*)(pkey+i*h->klen))->idx = i;
+        ptr[i] = ((t2_pay_t*)(pkey+i*h->klen))->ptr;
+        ((t2_pay_t*)(pkey+i*h->klen))->idx = i;
     }
     qsort(pkey, nkey, h->klen, h->func_cmp_key);
     for(int64_t i=0; i<nkey; i++)
-        map[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->idx;
+        map[i] = ((t2_pay_t*)(pkey+i*h->klen))->idx;
     t2sort_map_sort(ptr, nkey, map, h->trln, tmp);
     free(tmp);
     free(map);
@@ -45,8 +45,8 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     key = t2_list_keys(h, nsort);
     t2_sort_block(h, key, nsort);
     for(int i=0; i<nsort; i++) {
-        ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
-        ((t2sort_pay_t*)(key+i*h->klen))->bpi.idx = i;
+        ((t2_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
+        ((t2_pay_t*)(key+i*h->klen))->bpi.idx = i;
     }
     h->nblk++;
     write(h->fd_keys, key, nsort*h->klen);

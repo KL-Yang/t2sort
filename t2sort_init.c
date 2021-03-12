@@ -69,7 +69,9 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     t2_init_blk(h, bsiz, wioq, tlen);
     h->wrap = h->pntr*(wioq+1);
     h->_base = aligned_alloc(PAGE_SIZE, h->wrap*tlen);
-    printf("%s: bsiz=%dMB pntr=%ld wioq=%d\n", __func__, bsiz, h->pntr, wioq);
+    printf("%s: bsiz=%dMB pntr=%ld wioq=%d buff=%8.1fMB\n", 
+        __func__, bsiz, h->pntr, wioq, 
+        nearbyint((h->wrap*tlen)/1024.0/1024.0));
 
     h->wioq  = wioq;
     h->flag  = flag;

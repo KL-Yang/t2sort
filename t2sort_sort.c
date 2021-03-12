@@ -29,7 +29,7 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
         xntr = MIN(bntr, nkey-k);
         memset(n, 0, nblk*sizeof(int));
         for(int j=0; j<xntr; j++, pkey+=klen)
-            n[((t2sort_pay_t*)pkey)->bpi.blk]++;
+            n[((t2_pay_t*)pkey)->bpi.blk]++;
         for(int i=0; i<nblk; i++) {
             while(n[i]!=0) {
                 xque[x].ntr  = MIN(n[i], pntr);
