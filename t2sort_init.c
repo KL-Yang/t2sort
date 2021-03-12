@@ -10,10 +10,8 @@ static void t2_factor(int a, int *f)
                 f[j]=i;
                 j++;
                 break;
-            }
-    }
+            } };
 }
-
 static int t2_multiple(int pagemask, int trln)
 {
     int f[32], multiple=(1<<pagemask);
@@ -30,21 +28,18 @@ static int t2_multiple(int pagemask, int trln)
     return multiple;
 }
 
-//add to tail
-static void xque_enque(t2sort_que_t *head, t2sort_que_t *x)
+static void xque_enque(t2sort_que_t *stub, t2sort_que_t *x)
 {
-    t2sort_que_t *tail = head->prev;
+    t2sort_que_t *tail = stub->prev;
     tail->next = x; x->prev = tail;
-    head->prev = x; x->next = head;
+    stub->prev = x; x->next = stub;
 }
-//remove from head
-t2sort_que_t * xque_deque(t2sort_que_t *head)
+t2sort_que_t * xque_deque(t2sort_que_t *stub)
 {
-    t2sort_que_t *item = head->next;
-    head->next = item->next;    //note item may be head!
-    return item;
+    t2sort_que_t *head = stub->next;
+    stub->next = head->next;    //note head may be stub!
+    return head;
 }
-
 
 static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 {
@@ -100,10 +95,8 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->read.prev = h->read.next = &h->read;
 
     //1 for write key, 1 for extra
-    h->nxque = wioq+2;
-    h->xque  = calloc(h->nxque, sizeof(t2sort_que_t));
-    h->xhead = h->xtail = 0;
-    for(int i=0; i<h->nxque; i++) 
+    h->xque = calloc((wioq+2), sizeof(t2sort_que_t));
+    for(int i=0; i<(wioq+2); i++) 
         xque_enque(&h->read, &h->xque[i]);
 
     return (t2sort_h)h;

@@ -79,16 +79,7 @@ typedef struct t2sort_struct {
 //////////////////////////////////////////////
     t2sort_que_t        read;       //waiting que
     t2sort_que_t        wait;      //replace one first!
-
-//for t2sort_write, this is used as ring buffer.
-//for t2sort_read, this is used as linear list. Note read may
-//need split, and cannot use array!!!
-    //TODO: remove xhead, xtail and nxque.
-    //use read/wait instead, rename read to pool!
     t2sort_que_t      * xque;
-    int                 nxque;
-    int                 xhead;
-    int                 xtail;
 
 //////////////////
     int64_t             rhead;       //read key index

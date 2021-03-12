@@ -31,18 +31,19 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
     return realloc(xque, x*sizeof(t2sort_que_t));
 }
 
-
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
     if((h->rhead+=h->nfly)>h->rtail)
         t2_flush_block(h, h->rhead-h->rtail);
-    for(;h->xtail<h->xhead; h->xtail++) {
-        int j=h->xtail%h->nxque;
-        t2sort_aio_wait(&h->xque[j].aio, 1);
-        h->rdone+=h->xque[j].ntr;
-    }
-    //read keys to the buffer for sorting!
+    t2sort_que_t *xque = xque_deque(&h->wait);
+    while(xque!=&h->wait && xque->ntr>0) {
+        t2sort_aio_wait(&xque->aio, 1);
+        h->rdone+=xque->ntr;
+        xque = xque_deque(&h->wait);
+    };
+    free(h->xque);
+
     //2. read all keys in memory, may exceed bsize.
     h->nkey = h->rhead;
     dbg_blocks_check(h);
@@ -68,9 +69,6 @@ int t2sort_sort(t2sort_h h)
     printf("%s:total rque ntr=%d\n", __func__, xsum);
     free(key);
     //abort();
-
-    //1. free wpile buffers
-    free(h->xque);
 
     //read for a block
     h->rhead = 0;

@@ -50,21 +50,15 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     }
     h->nblk++;
     write(h->fd_keys, key, nsort*h->klen);
-    //use ring buffer to handle the write queue!!!
-    //TODO: use read/wait double link list!!!
-    //remove nxque, xhead/xtail!!!
-    for(int i=0, j, ntr; i<h->wioq; i++) {
-        assert(h->xhead-h->xtail<h->nxque);
-        j = h->xhead%h->nxque;
-        ntr = MIN(h->pntr, nsort-i*h->pntr);
-        if(ntr<=0) 
-            break;
-        h->xque[j].ntr = ntr;
+    for(int i=0; i<nsort; i+=h->pntr) {
+        t2sort_que_t *xque = xque_deque(&h->read); 
+        assert(xque!=&h->read); //que exhausted
+        xque->ntr = MIN(h->pntr, nsort-i);
         p = h->_base+(h->rtail%h->wrap)*h->trln;
-        t2sort_aio_write(&h->xque[j].aio, h->fd, p, 
-                ntr*h->trln, h->rtail*h->trln);
-        h->rtail += ntr;
-        h->xhead++;
+        t2sort_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
+                h->rtail*h->trln);
+        h->rtail += xque->ntr;
+        xque_enque(&h->wait, xque);
     }
     free(key);
 }
@@ -80,11 +74,12 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
 
     //wait all to satisfy *ntr since user requested
     while(h->rdone+h->wrap<h->rhead+(*ntr)) {  //must wait
-        assert(h->xtail<h->xhead);
-        int x=h->xtail%h->nxque;
-        t2sort_aio_wait(&h->xque[x].aio, 1);
-        h->rdone+=h->xque[x].ntr;
-        h->xtail++;
+        t2sort_que_t *xque = xque_deque(&h->wait);
+        assert(xque!=&h->wait);
+        t2sort_aio_wait(&xque->aio, 1);
+        h->rdone+=xque->ntr;
+        memset(xque, 0, sizeof(t2sort_que_t));  //for safty!
+        xque_enque(&h->read, xque);
     }
     void *praw = h->_base+(h->rhead%h->wrap)*h->trln;
     h->nfly = *ntr;
