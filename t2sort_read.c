@@ -66,7 +66,7 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
 
     if(h->rdone==h->rtail) {    //data exhausted
         int nsort = rque_wait_blk2(&h->wait, h->bntr);
-        void *pkey = t2sort_list_key(h, nsort);
+        void *pkey = t2_list_keys(h, nsort);
         t2_sort_block(h, pkey, nsort);
         free(pkey);
         h->rtail+=nsort;

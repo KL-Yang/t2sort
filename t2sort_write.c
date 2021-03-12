@@ -7,16 +7,16 @@ static int ring_wrap(int i, int d, int n)   //maximum d without wrap
     return r;
 }
 
-void * t2sort_list_key(t2sort_t *h, int nsort)
+void * t2_list_keys(t2sort_t *h, int nsort)
 {
-    void *buff, *pkey;
-    int part1 = ring_wrap(h->rtail, nsort, h->wrap);
+    void *buff, *pkey; int part;
+    part = ring_wrap(h->rtail, nsort, h->wrap);
     pkey = malloc(nsort*h->klen);
     buff = h->_base+(h->rtail%h->wrap)*h->trln;
-    h->func_cpy_key(buff, h->trln, part1, h->kdef, pkey);
-    if(part1<nsort)
-        h->func_cpy_key(h->_base, h->trln, nsort-part1, 
-                h->kdef, pkey+part1*h->klen);
+    h->func_cpy_key(buff, h->trln, part, h->kdef, pkey);
+    if(part<nsort)
+        h->func_cpy_key(h->_base, h->trln, nsort-part, 
+                h->kdef, pkey+part*h->klen);
     return pkey;
 }
 
@@ -42,7 +42,7 @@ static void t2_sort_block(t2sort_t *h, void *pkey, int nkey)
 static void t2_flush_block(t2sort_t *h, int nsort)
 {
     void *key, *p;
-    key = t2sort_list_key(h, nsort);
+    key = t2_list_keys(h, nsort);
     t2_sort_block(h, key, nsort);
     for(int i=0; i<nsort; i++) {
         ((t2sort_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
@@ -51,6 +51,8 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     h->nblk++;
     write(h->fd_keys, key, nsort*h->klen);
     //use ring buffer to handle the write queue!!!
+    //TODO: use read/wait double link list!!!
+    //remove nxque, xhead/xtail!!!
     for(int i=0, j, ntr; i<h->wioq; i++) {
         assert(h->xhead-h->xtail<h->nxque);
         j = h->xhead%h->nxque;
