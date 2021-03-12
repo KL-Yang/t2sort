@@ -6,8 +6,7 @@
 /**
  * Add DIO flag later after handling alignment issue
  * */
-static void
-t2sort_init_scratch(t2sort_t *h)
+static void t2sort_init_scratch(t2sort_t *h)
 {
     char scratchname_d[]="delete_d_XXXXXX";
     mkstemp(scratchname_d);
@@ -26,7 +25,7 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     int bsiz, int wioq, int flag)
 {
     t2sort_t *h = calloc(1, sizeof(t2sort_t));
-    h->trlen = tlen;
+    h->trln  = tlen;
     h->ndef  = ndef;
     h->kdef  = calloc(ndef, sizeof(t2sort_key_def_t));
     memcpy(h->kdef, kdef, ndef*sizeof(t2sort_key_def_t));

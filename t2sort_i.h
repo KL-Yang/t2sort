@@ -1,24 +1,22 @@
 #ifndef H_I_T2SORT_T2SORT
 #define H_I_T2SORT_T2SORT
 
+#include <aio.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
-#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <aio.h>
+#include "t2sort.h"
 
 #define MIN(a,b)    ((a)>(b)?(b):(a))
 #define MAX(a,b)    ((a)>(b)?(a):(b))
-
-#include "t2sort.h"
 
 /* typedef struct {
     void      *_base;
@@ -60,7 +58,7 @@ struct t2sort_rque_struct {
 typedef struct t2sort_struct {
     int                 fd;         //data file
     int                 fd_keys;    //keys file, not used yet
-    int                 trlen;
+    int                 trln;
     int                 wioq;
     t2sort_key_def_t  * kdef;
     int                 ndef;
@@ -72,7 +70,6 @@ typedef struct t2sort_struct {
     int64_t             bntr;
     int64_t             pntr;
 //////////////////////////////////////////////
-    //t2sort_que_t      * read;       //waiting que
     t2sort_que_t        read2;       //waiting que
     t2sort_que_t        wait2;      //replace one first!
 

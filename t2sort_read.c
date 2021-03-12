@@ -1,15 +1,6 @@
 #ifndef C_T2SORT_READ_T2SORT
 #define C_T2SORT_READ_T2SORT
 
-//remove the first item from the queue
-static t2sort_que_t * rque_deque(t2sort_que_t **head)
-{
-    t2sort_que_t *x = *head;
-    *head = (*head)->next;
-    x->next = NULL;
-    return x;
-}
-
 static int rque_wait_blk2(t2sort_que_t *head, int bntr)
 {
     int ntr=0;
@@ -33,9 +24,9 @@ static int rque_wait_blk2(t2sort_que_t *head, int bntr)
  * */
 static void rque_issue(t2sort_t *h, t2sort_que_t *r)
 {
-    void *p = h->_base+(h->rhead%h->nwrap)*h->trlen;
-    t2sort_aio_read(&r->aio, h->fd, p, r->ntr*h->trlen,
-            r->seek*h->trlen);
+    void *p = h->_base+(h->rhead%h->nwrap)*h->trln;
+    t2sort_aio_read(&r->aio, h->fd, p, r->ntr*h->trln,
+            r->seek*h->trln);
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
     printf("  %s: ntr=%d\n", __func__, r->ntr);
@@ -43,21 +34,6 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
     xtail->next = r; r->prev = xtail;
     r->next = &h->wait2; h->wait2.prev = r;
 }
-
-//issue as much read as possibly can
-/* static void try_issue_read(t2sort_t *h) {
-    while(h->read!=NULL && 
-            (h->rdone+h->nwrap-h->rhead)>=h->read->ntr) { //can read
-        t2sort_que_t *x, *y;
-        x = rque_deque(&h->read);   //deque
-        x = rque_split(h, x);       //split if required
-        do {
-            y = x->next;
-            rque_issue(h, x);
-            x = y;
-        } while(x!=NULL);
-    }
-} */
 
 //deque one, issue no wrap read,
 //if read incomplete, split, issue and enque part two.
@@ -100,7 +76,7 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     void *praw;
     *ntr = MIN(*ntr, h->rtail-h->rdone);
     *ntr = ring_wrap(h->rdone, (*ntr), h->nwrap);
-    praw = h->_base+(h->rdone%h->nwrap)*h->trlen;
+    praw = h->_base+(h->rdone%h->nwrap)*h->trln;
     h->rdfly = *ntr;
     return praw;
 }
@@ -113,9 +89,9 @@ int t2sort_read(t2sort_h h, void *p, int ntr)
         praw = t2sort_readraw(h, &nget);
         if(nget<=0)
             break;
-        memcpy(pdes, praw, h->trlen*nget);
+        memcpy(pdes, praw, h->trln*nget);
         left -= nget;
-        pdes += nget*h->trlen;
+        pdes += nget*h->trln;
     };
     assert(left!=ntr);
     return (ntr-left);

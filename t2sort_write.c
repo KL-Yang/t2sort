@@ -13,10 +13,10 @@ void * t2sort_list_key(t2sort_t *h, int nsort)
     void *buff, *pkey;
     int part1 = ring_wrap(h->rtail, nsort, h->nwrap);
     pkey = malloc(nsort*h->klen);
-    buff = h->_base+(h->rtail%h->nwrap)*h->trlen;
-    h->func_cpy_key(buff, h->trlen, part1, h->kdef, pkey);
+    buff = h->_base+(h->rtail%h->nwrap)*h->trln;
+    h->func_cpy_key(buff, h->trln, part1, h->kdef, pkey);
     if(part1<nsort)
-        h->func_cpy_key(h->_base, h->trlen, nsort-part1, 
+        h->func_cpy_key(h->_base, h->trln, nsort-part1, 
                 h->kdef, pkey+part1*h->klen);
     return pkey;
 }
@@ -24,7 +24,7 @@ void * t2sort_list_key(t2sort_t *h, int nsort)
 static void sort_one_block(t2sort_t *h, void *pkey, int nkey) 
 {
     void **ptr, *tmp; int *map;
-    tmp = malloc(h->trlen);
+    tmp = malloc(h->trln);
     map = malloc(nkey*sizeof(int));
     ptr = malloc(nkey*sizeof(void*));
     for(int64_t i=0; i<nkey; i++) {
@@ -34,7 +34,7 @@ static void sort_one_block(t2sort_t *h, void *pkey, int nkey)
     qsort(pkey, nkey, h->klen, h->func_cmp_key);
     for(int64_t i=0; i<nkey; i++)
         map[i] = ((t2sort_pay_t*)(pkey+i*h->klen))->idx;
-    t2sort_map_sort(ptr, nkey, map, h->trlen, tmp);
+    t2sort_map_sort(ptr, nkey, map, h->trln, tmp);
     free(tmp);
     free(map);
     free(ptr);
@@ -59,9 +59,9 @@ static void t2sort_write_block(t2sort_t *h, int nsort)
         if(ntr<=0) 
             break;
         h->xque[j].ntr = ntr;
-        p = h->_base+(h->rtail%h->nwrap)*h->trlen;
+        p = h->_base+(h->rtail%h->nwrap)*h->trln;
         t2sort_aio_write(&h->xque[j].aio, h->fd, p, 
-                ntr*h->trlen, h->rtail*h->trlen);
+                ntr*h->trln, h->rtail*h->trln);
         h->rtail += ntr;
         h->xhead++;
     }
@@ -86,7 +86,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         h->rdone+=h->xque[x].ntr;
         h->xtail++;
     }
-    void *praw = h->_base+(h->rhead%h->nwrap)*h->trlen;
+    void *praw = h->_base+(h->rhead%h->nwrap)*h->trln;
     h->rdfly = *ntr;
     return praw;
 }
@@ -101,9 +101,9 @@ int t2sort_write(t2sort_h h, const void *p, int ntr)
         nput = left;
         praw = t2sort_writeraw(h, &nput);
         assert(nput>0);
-        memcpy(praw, psrc, h->trlen*nput);
+        memcpy(praw, psrc, h->trln*nput);
         left -= nput;
-        psrc += nput*h->trlen;
+        psrc += nput*h->trln;
     };
     return (ntr-left);
 }
