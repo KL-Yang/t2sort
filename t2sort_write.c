@@ -1,11 +1,10 @@
 #ifndef C_T2SORT_WRITE_T2SORT
 #define C_T2SORT_WRITE_T2SORT
-//return the maximum size without wrap as first part!
-static int ring_wrap(int i, int d, int n)
+
+static int ring_wrap(int i, int d, int n)   //maximum d without wrap
 {
-    if(i%n+d<=n)
-        return d;
-    return (n-(i%n));
+    int r=(i%n+d<=n)?(d):(n-(i%n));
+    return r;
 }
 
 void * t2sort_list_key(t2sort_t *h, int nsort)
