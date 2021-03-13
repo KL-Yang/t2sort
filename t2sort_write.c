@@ -55,7 +55,7 @@ static void t2_flush_block(t2sort_t *h, int nsort)
         //xque->ntr = MIN(h->pntr, nsort-i);
         xque->ntr = h->pntr;    //last pile may have some garbage
         p = h->_base+(h->tail%h->wrap)*h->trln;
-        t2sort_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
+        t2_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
                 h->tail*h->trln);
         h->tail += xque->ntr;
         xque_enque(&h->wait, xque);
@@ -76,7 +76,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     while(h->done+h->wrap<h->head+(*ntr)) {  //must wait
         t2_que_t *xque = xque_deque(&h->wait);
         assert(xque!=&h->wait && xque->ntr);
-        t2sort_aio_wait(&xque->aio, 1);
+        t2_aio_wait(&xque->aio, 1);
         h->done+=xque->ntr;
         memset(xque, 0, sizeof(t2_que_t));  //for safty!
         xque_enque(&h->read, xque);

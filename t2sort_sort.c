@@ -38,7 +38,7 @@ int t2sort_sort(t2sort_h h)
         t2_flush_block(h, h->head-h->tail);
     t2_que_t *xque = xque_deque(&h->wait);
     while(xque!=&h->wait) {
-        t2sort_aio_wait(&xque->aio, 1);
+        t2_aio_wait(&xque->aio, 1);
         h->done+=xque->ntr;
         xque = xque_deque(&h->wait);
     };
