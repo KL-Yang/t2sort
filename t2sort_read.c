@@ -9,7 +9,7 @@ static int rque_wait_blk2(t2sort_que_t *head, int bntr)
         t2sort_aio_wait(&newh->aio, 1);
         ntr += newh->ntr;
         newh->flag |= T2SORT_RQUE_FINISH;
-        printf("%s: free(%p)\n", __func__, newh); fflush(0);
+        //printf("%s: free(%p)\n", __func__, newh); fflush(0);
         t2sort_que_t *temp = newh; //avoid use after free()!
         newh = newh->next;
         if(temp->flag & T2SORT_RQUE_ALLOC)
@@ -29,7 +29,7 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
             r->seek*h->trln);
     r->flag |= T2SORT_RQUE_SUBMIT;
     h->rhead += r->ntr;
-    printf("  %s: ntr=%d\n", __func__, r->ntr);
+    //printf("  %s: ntr=%d\n", __func__, r->ntr);
     t2sort_que_t *xtail = h->wait.prev;
     xtail->next = r; r->prev = xtail;
     r->next = &h->wait; h->wait.prev = r;

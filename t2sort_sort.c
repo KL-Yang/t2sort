@@ -43,10 +43,13 @@ int t2sort_sort(t2sort_h h)
         xque = xque_deque(&h->wait);
     };
     free(h->xque);
+    //close(h->fd);   //reopen without O_DIRECT
+    //h->fd = open(h->fd_name, O_RDWR|O_CREAT,
+    //        S_IRWXU|S_IRWXG|S_IRWXO);
 
     h->nkey = h->rhead;
-    dbg_blocks_check(h);
-    printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
+    //dbg_blocks_check(h);
+    //printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
     //abort();
 
     //3. read and sort all keys

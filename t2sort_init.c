@@ -62,7 +62,9 @@ static void t2_init_scratch(t2sort_t *h)
     mkstemp(scratchname_k);
     printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
             h->fd_name, scratchname_k);
-    h->fd = open(h->fd_name, O_RDWR|O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO);
+    //h->fd = open(h->fd_name, O_RDWR|O_CREAT|O_DIRECT,
+    h->fd = open(h->fd_name, O_RDWR|O_CREAT,
+            S_IRWXU|S_IRWXG|S_IRWXO);
     h->fd_keys = open(scratchname_k, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);
 }
