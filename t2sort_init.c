@@ -28,15 +28,15 @@ static int t2_multiple(int pagemask, int trln)
     return multiple;
 }
 
-static void xque_enque(t2sort_que_t *stub, t2sort_que_t *x)
+static void xque_enque(t2_que_t *stub, t2_que_t *x)
 {
-    t2sort_que_t *tail = stub->prev;
+    t2_que_t *tail = stub->prev;
     tail->next = x; x->prev = tail;
     stub->prev = x; x->next = stub;
 }
-static t2sort_que_t *xque_deque(t2sort_que_t *stub)
+static t2_que_t *xque_deque(t2_que_t *stub)
 {
-    t2sort_que_t *head = stub->next;
+    t2_que_t *head = stub->next;
     stub->next = head->next;    //note head may be stub!
     return head;
 }
@@ -93,7 +93,7 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
 
-    h->_xque = calloc((wioq+2), sizeof(t2sort_que_t));
+    h->_xque = calloc((wioq+2), sizeof(t2_que_t));
     for(int i=0; i<(wioq+2); i++) 
         xque_enque(&h->read, &h->_xque[i]);
 

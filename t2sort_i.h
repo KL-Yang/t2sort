@@ -44,10 +44,10 @@ typedef union t2sort_pay_struct {
 } t2_pay_t;
 
 //queue generation algorith ensure ntr aligned with block size
-typedef struct t2sort_rque_struct t2sort_que_t;
+typedef struct t2sort_rque_struct t2_que_t;
 struct t2sort_rque_struct { //TODO: rename to t2_que_t
-    t2sort_que_t      * next;
-    t2sort_que_t      * prev;
+    t2_que_t      * next;
+    t2_que_t      * prev;
     int                 ntr;
     int                 blk;    //read from which disk block
     //additional information for later aligned operation.
@@ -77,8 +77,8 @@ typedef struct t2sort_struct {
     int64_t             bntr;
     int64_t             pntr;
 //////////////////////////////////////////////
-    t2sort_que_t        read;       //waiting que
-    t2sort_que_t        wait;      //replace one first!
+    t2_que_t        read;       //waiting que
+    t2_que_t        wait;      //replace one first!
 
     int64_t             head;       //read key index
     int64_t             tail;      //because of 2nd pass sort
@@ -90,7 +90,7 @@ typedef struct t2sort_struct {
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);
 //////////////////////////////////////////////
     void              *_base;
-    t2sort_que_t      *_xque;
+    t2_que_t      *_xque;
 } t2sort_t;
 
 int dbg_gen_key(int kmin, int kmax);

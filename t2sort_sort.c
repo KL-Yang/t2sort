@@ -2,13 +2,13 @@
 #define C_T2SORT_RESET_T2SORT
 
 //build the queue, break all read large than pntr!
-static t2sort_que_t *
-t2_list_rque(t2sort_que_t *head, void *pkey, int nkey, 
+static t2_que_t *
+t2_list_rque(t2_que_t *head, void *pkey, int nkey, 
         int klen, int bntr, int nblk, int pntr)
 {
     nblk = ceilf(nkey*1.0f/bntr);
-    int f[nblk], n[nblk], x=0; t2sort_que_t *xque;
-    xque = calloc(2*nblk*nblk, sizeof(t2sort_que_t));
+    int f[nblk], n[nblk], x=0; t2_que_t *xque;
+    xque = calloc(2*nblk*nblk, sizeof(t2_que_t));
     memset(f, 0, nblk*sizeof(int));
     for(int k=0, xntr; k<nkey; k+=bntr) {
         xntr = MIN(bntr, nkey-k);
@@ -28,7 +28,7 @@ t2_list_rque(t2sort_que_t *head, void *pkey, int nkey,
             }
         }
     } assert(x<=2*nblk*nblk);
-    return realloc(xque, x*sizeof(t2sort_que_t));
+    return realloc(xque, x*sizeof(t2_que_t));
 }
 
 int t2sort_sort(t2sort_h h)
@@ -36,7 +36,7 @@ int t2sort_sort(t2sort_h h)
     //1. flush piles of the last block
     if((h->head+=h->nfly)>h->tail)
         t2_flush_block(h, h->head-h->tail);
-    t2sort_que_t *xque = xque_deque(&h->wait);
+    t2_que_t *xque = xque_deque(&h->wait);
     while(xque!=&h->wait) {
         t2sort_aio_wait(&xque->aio, 1);
         h->done+=xque->ntr;
@@ -64,7 +64,7 @@ int t2sort_sort(t2sort_h h)
             h->bntr, h->nblk, h->pntr);
     //debug
     int xsum=0; 
-    t2sort_que_t *xhead = h->read.next;
+    t2_que_t *xhead = h->read.next;
     while(xhead!=&h->read) {
         xsum += xhead->ntr;
         xhead = xhead->next;
