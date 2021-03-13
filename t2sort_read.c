@@ -37,12 +37,12 @@ static void rque_issue(t2sort_t *h, t2sort_que_t *r)
 
 //deque one, issue no wrap read,
 //if read incomplete, split, issue and enque part two.
-static void try_issue_read2(t2sort_t *h, t2sort_que_t *head) 
+static void try_issue_read2(t2sort_t *h, t2sort_que_t *stub)
 {
     t2sort_que_t *x, *y; int n, r;
-    while(head->next!=head && //can read
-            h->rdone+h->wrap>=h->head+head->next->ntr) {
-        x = xque_deque(head); assert(x!=head && x->ntr!=0);
+    while(stub->next!=stub&& //can read
+            h->rdone+h->wrap>=h->head+stub->next->ntr) {
+        x = xque_deque(stub); assert(x!=stub && x->ntr!=0);
         n = ring_wrap(h->head, x->ntr, h->wrap);
         r = x->ntr-n;
         x->ntr = n;

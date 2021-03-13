@@ -16,6 +16,7 @@ check_file_order(int fd, int ninst, int trlen,
     //dbg_keys_print(buff, ninst, trlen, 
     //        kdef[0].offset, kdef[1].offset);
     free(buff);
+    printf("%s() done!\n", __func__);
 }
 
 #define TRLEN   (1223*sizeof(float))
