@@ -34,8 +34,8 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
-    if((h->head+=h->nfly)>h->rtail)
-        t2_flush_block(h, h->head-h->rtail);
+    if((h->head+=h->nfly)>h->tail)
+        t2_flush_block(h, h->head-h->tail);
     t2sort_que_t *xque = xque_deque(&h->wait);
     while(xque!=&h->wait && xque->ntr>0) {
         t2sort_aio_wait(&xque->aio, 1);
@@ -75,7 +75,7 @@ int t2sort_sort(t2sort_h h)
 
     //read for a block
     h->head = 0;
-    h->rtail = 0;
+    h->tail = 0;
     h->rdone = 0;
     h->nfly = 0;
 

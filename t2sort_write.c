@@ -9,9 +9,9 @@ static int ring_wrap(int i, int d, int n)   //maximum d without wrap
 
 void * t2_list_keys(t2sort_t *h, int nsort)
 {
-    int nowrap = ring_wrap(h->rtail, nsort, h->wrap);
+    int nowrap = ring_wrap(h->tail, nsort, h->wrap);
     void *pkey = malloc(nsort*h->klen);
-    void *buff = h->_base+(h->rtail%h->wrap)*h->trln;
+    void *buff = h->_base+(h->tail%h->wrap)*h->trln;
     h->func_cpy_key(buff, h->trln, nowrap, h->kdef, pkey);
     if(nowrap<nsort)
         h->func_cpy_key(h->_base, h->trln, nsort-nowrap, 
@@ -54,10 +54,10 @@ static void t2_flush_block(t2sort_t *h, int nsort)
         assert(xque!=&h->read); //que exhausted
         //xque->ntr = MIN(h->pntr, nsort-i);
         xque->ntr = h->pntr;    //last pile may have some garbage
-        p = h->_base+(h->rtail%h->wrap)*h->trln;
+        p = h->_base+(h->tail%h->wrap)*h->trln;
         t2sort_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
-                h->rtail*h->trln);
-        h->rtail += xque->ntr;
+                h->tail*h->trln);
+        h->tail += xque->ntr;
         xque_enque(&h->wait, xque);
     }
     free(key);
@@ -65,12 +65,12 @@ static void t2_flush_block(t2sort_t *h, int nsort)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    if((h->head+=h->nfly)>=h->rtail+h->bntr)   //delayed flush
+    if((h->head+=h->nfly)>=h->tail+h->bntr)   //delayed flush
         t2_flush_block(h, h->bntr); 
 
     //do not cross block and ring buffer boundary!
     *ntr = ring_wrap(h->head, (*ntr), h->wrap);
-    *ntr = MIN((*ntr), h->rtail+h->bntr-h->head);
+    *ntr = MIN((*ntr), h->tail+h->bntr-h->head);
 
     //wait all to satisfy *ntr since user requested
     while(h->rdone+h->wrap<h->head+(*ntr)) {  //must wait

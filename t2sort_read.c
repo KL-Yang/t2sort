@@ -64,15 +64,15 @@ const void * t2sort_readraw(t2sort_t *h, int *ntr)
     h->rdone += h->nfly;
     try_issue_read2(h, &h->read);
 
-    if(h->rdone==h->rtail) {    //data exhausted
+    if(h->rdone==h->tail) {    //data exhausted
         int nsort = rque_wait_blk2(&h->wait, h->bntr);
         void *pkey = t2_list_keys(h, nsort);
         t2_sort_block(h, pkey, nsort);
         free(pkey);
-        h->rtail+=nsort;
+        h->tail+=nsort;
     }
 
-    *ntr = MIN(*ntr, h->rtail-h->rdone);
+    *ntr = MIN(*ntr, h->tail-h->rdone);
     *ntr = ring_wrap(h->rdone, (*ntr), h->wrap);
     void *praw = h->_base+(h->rdone%h->wrap)*h->trln;
     h->nfly = *ntr;
