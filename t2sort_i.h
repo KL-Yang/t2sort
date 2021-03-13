@@ -35,7 +35,7 @@ struct t2_blk_struct {
 
 typedef struct t2sort_aio_struct {
     struct aiocb        paio;
-} t2sort_aio_t;
+} t2_aio_t;
 
 typedef union t2sort_pay_struct {
     void              * ptr;    //pointer
@@ -52,7 +52,7 @@ struct t2sort_rque_struct { //TODO: rename to t2_que_t
     int                 blk;    //read from which disk block
     //additional information for later aligned operation.
     off_t               seek;   //trace index of seeking
-    t2sort_aio_t        aio;
+    t2_aio_t        aio;
     int                 flag;
     int                 id;
 };
