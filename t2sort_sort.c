@@ -37,7 +37,7 @@ int t2sort_sort(t2sort_h h)
     if((h->head+=h->nfly)>h->tail)
         t2_flush_block(h, h->head-h->tail);
     t2sort_que_t *xque = xque_deque(&h->wait);
-    while(xque!=&h->wait && xque->ntr>0) {
+    while(xque!=&h->wait) {
         t2sort_aio_wait(&xque->aio, 1);
         h->done+=xque->ntr;
         xque = xque_deque(&h->wait);
@@ -49,9 +49,9 @@ int t2sort_sort(t2sort_h h)
                 S_IRWXU|S_IRWXG|S_IRWXO);
     }
     h->nkey = h->head;
-    //dbg_blocks_check(h);
-    //printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
-    //abort();
+
+    dbg_blocks_check(h);
+    printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
 
     //3. read and sort all keys
     void *key = malloc(h->nkey*h->klen);
@@ -78,5 +78,4 @@ int t2sort_sort(t2sort_h h)
 
     return 0;
 }
-
 #endif

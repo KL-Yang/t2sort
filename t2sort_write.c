@@ -7,7 +7,7 @@ static int ring_wrap(int i, int d, int n)   //maximum d without wrap
     return r;
 }
 
-void * t2_list_keys(t2sort_t *h, int nsort)
+static void *t2_list_keys(t2sort_t *h, int nsort)
 {
     int nowrap = ring_wrap(h->tail, nsort, h->wrap);
     void *pkey = malloc(nsort*h->klen);

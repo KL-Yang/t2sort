@@ -34,7 +34,7 @@ static void xque_enque(t2sort_que_t *stub, t2sort_que_t *x)
     tail->next = x; x->prev = tail;
     stub->prev = x; x->next = stub;
 }
-t2sort_que_t * xque_deque(t2sort_que_t *stub)
+static t2sort_que_t *xque_deque(t2sort_que_t *stub)
 {
     t2sort_que_t *head = stub->next;
     stub->next = head->next;    //note head may be stub!
@@ -51,9 +51,6 @@ static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
     h->bntr = h->pntr*wioq;
 }
 
-/**
- * Add DIO flag later after handling alignment issue
- * */
 static void t2_init_scratch(t2sort_t *h, int flag)
 {
     strcpy(h->fd_name, "delete_d_XXXXXX");
@@ -96,7 +93,6 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
 
-    //1 for write key, 1 for extra
     h->_xque = calloc((wioq+2), sizeof(t2sort_que_t));
     for(int i=0; i<(wioq+2); i++) 
         xque_enque(&h->read, &h->_xque[i]);

@@ -83,8 +83,6 @@ typedef struct t2sort_struct {
     int64_t             head;       //read key index
     int64_t             tail;      //because of 2nd pass sort
     int64_t             done;      //read already given to user
-//////////////////////
-
     int64_t             nfly;      //readraw on the fly
     int64_t             wrap;      //pntr*(wioq+1)
 //////////////////////////////////////////////
