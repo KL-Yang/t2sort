@@ -7,6 +7,7 @@ int t2sort_destroy(t2sort_h h)
     close(t->fd_keys);
     free(t->kdef);
     free(t->_base);
+    free(t->_xque);
     free(t);
     return 0;
 }

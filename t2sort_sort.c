@@ -3,7 +3,7 @@
 
 //build the queue, break all read large than pntr!
 static t2sort_que_t *
-t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey, 
+t2_list_rque(t2sort_que_t *head, void *pkey, int nkey, 
         int klen, int bntr, int nblk, int pntr)
 {
     nblk = ceilf(nkey*1.0f/bntr);
@@ -42,7 +42,7 @@ int t2sort_sort(t2sort_h h)
         h->done+=xque->ntr;
         xque = xque_deque(&h->wait);
     };
-    free(h->xque);
+    free(h->_xque);
     if(h->flag & T2SORT_DIO) {
         close(h->fd);   //reopen without O_DIRECT for now!
         h->fd = open(h->fd_name, O_RDWR|O_CREAT,
@@ -60,7 +60,7 @@ int t2sort_sort(t2sort_h h)
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
-    t2sort_sort_rque2(&h->read, key, h->nkey, h->klen, 
+    h->_xque = t2_list_rque(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr);
     //debug
     int xsum=0; 

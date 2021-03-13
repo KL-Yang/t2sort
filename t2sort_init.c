@@ -97,9 +97,9 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->read.prev = h->read.next = &h->read;
 
     //1 for write key, 1 for extra
-    h->xque = calloc((wioq+2), sizeof(t2sort_que_t));
+    h->_xque = calloc((wioq+2), sizeof(t2sort_que_t));
     for(int i=0; i<(wioq+2); i++) 
-        xque_enque(&h->read, &h->xque[i]);
+        xque_enque(&h->read, &h->_xque[i]);
 
     return (t2sort_h)h;
 }

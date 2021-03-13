@@ -79,9 +79,7 @@ typedef struct t2sort_struct {
 //////////////////////////////////////////////
     t2sort_que_t        read;       //waiting que
     t2sort_que_t        wait;      //replace one first!
-    t2sort_que_t      * xque;
 
-//////////////////
     int64_t             head;       //read key index
     int64_t             tail;      //because of 2nd pass sort
     int64_t             done;      //read already given to user
@@ -94,6 +92,7 @@ typedef struct t2sort_struct {
     void (*func_cpy_key)(void*,int,int,const t2sort_key_def_t*,void*);
 //////////////////////////////////////////////
     void              *_base;
+    t2sort_que_t      *_xque;
 } t2sort_t;
 
 int dbg_gen_key(int kmin, int kmax);
