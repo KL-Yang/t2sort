@@ -65,15 +65,15 @@ static void t2_flush_block(t2sort_t *h, int nsort)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
-    if((h->rhead+=h->nfly)>=h->rtail+h->bntr)   //delayed flush
+    if((h->head+=h->nfly)>=h->rtail+h->bntr)   //delayed flush
         t2_flush_block(h, h->bntr); 
 
     //do not cross block and ring buffer boundary!
-    *ntr = ring_wrap(h->rhead, (*ntr), h->wrap);
-    *ntr = MIN((*ntr), h->rtail+h->bntr-h->rhead);
+    *ntr = ring_wrap(h->head, (*ntr), h->wrap);
+    *ntr = MIN((*ntr), h->rtail+h->bntr-h->head);
 
     //wait all to satisfy *ntr since user requested
-    while(h->rdone+h->wrap<h->rhead+(*ntr)) {  //must wait
+    while(h->rdone+h->wrap<h->head+(*ntr)) {  //must wait
         t2sort_que_t *xque = xque_deque(&h->wait);
         assert(xque!=&h->wait && xque->ntr);
         t2sort_aio_wait(&xque->aio, 1);
@@ -81,7 +81,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         memset(xque, 0, sizeof(t2sort_que_t));  //for safty!
         xque_enque(&h->read, xque);
     }
-    void *praw = h->_base+(h->rhead%h->wrap)*h->trln;
+    void *praw = h->_base+(h->head%h->wrap)*h->trln;
     h->nfly = *ntr;
     return praw;
 }

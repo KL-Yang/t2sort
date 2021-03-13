@@ -24,11 +24,11 @@ static int rque_wait_blk2(t2sort_que_t *head, int bntr)
  * */
 static void rque_issue(t2sort_t *h, t2sort_que_t *r)
 {
-    void *p = h->_base+(h->rhead%h->wrap)*h->trln;
+    void *p = h->_base+(h->head%h->wrap)*h->trln;
     t2sort_aio_read(&r->aio, h->fd, p, r->ntr*h->trln,
             r->seek*h->trln);
     r->flag |= T2SORT_RQUE_SUBMIT;
-    h->rhead += r->ntr;
+    h->head += r->ntr;
     //printf("  %s: ntr=%d\n", __func__, r->ntr);
     t2sort_que_t *xtail = h->wait.prev;
     xtail->next = r; r->prev = xtail;
@@ -41,9 +41,9 @@ static void try_issue_read2(t2sort_t *h, t2sort_que_t *head)
 {
     t2sort_que_t *x, *y; int n, r;
     while(head->next!=head && //can read
-            h->rdone+h->wrap>=h->rhead+head->next->ntr) {
+            h->rdone+h->wrap>=h->head+head->next->ntr) {
         x = xque_deque(head); assert(x!=head && x->ntr!=0);
-        n = ring_wrap(h->rhead, x->ntr, h->wrap);
+        n = ring_wrap(h->head, x->ntr, h->wrap);
         r = x->ntr-n;
         x->ntr = n;
         rque_issue(h, x); //TODO: if partial issue return a flag!

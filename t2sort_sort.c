@@ -34,8 +34,8 @@ t2sort_sort_rque2(t2sort_que_t *head, void *pkey, int nkey,
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
-    if((h->rhead+=h->nfly)>h->rtail)
-        t2_flush_block(h, h->rhead-h->rtail);
+    if((h->head+=h->nfly)>h->rtail)
+        t2_flush_block(h, h->head-h->rtail);
     t2sort_que_t *xque = xque_deque(&h->wait);
     while(xque!=&h->wait && xque->ntr>0) {
         t2sort_aio_wait(&xque->aio, 1);
@@ -43,11 +43,12 @@ int t2sort_sort(t2sort_h h)
         xque = xque_deque(&h->wait);
     };
     free(h->xque);
-    //close(h->fd);   //reopen without O_DIRECT
-    //h->fd = open(h->fd_name, O_RDWR|O_CREAT,
-    //        S_IRWXU|S_IRWXG|S_IRWXO);
-
-    h->nkey = h->rhead;
+    if(h->flag & T2SORT_DIO) {
+        close(h->fd);   //reopen without O_DIRECT for now!
+        h->fd = open(h->fd_name, O_RDWR|O_CREAT,
+                S_IRWXU|S_IRWXG|S_IRWXO);
+    }
+    h->nkey = h->head;
     //dbg_blocks_check(h);
     //printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
     //abort();
@@ -73,7 +74,7 @@ int t2sort_sort(t2sort_h h)
     //abort();
 
     //read for a block
-    h->rhead = 0;
+    h->head = 0;
     h->rtail = 0;
     h->rdone = 0;
     h->nfly = 0;

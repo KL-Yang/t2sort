@@ -82,7 +82,7 @@ typedef struct t2sort_struct {
     t2sort_que_t      * xque;
 
 //////////////////
-    int64_t             rhead;       //read key index
+    int64_t             head;       //read key index
     int64_t             rtail;      //because of 2nd pass sort
     int64_t             rdone;      //read already given to user
 //////////////////////

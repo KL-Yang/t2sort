@@ -33,7 +33,7 @@ int main()
         {.offset=GKOFS, .type=T2SORT_INT32_T, .order=1},
         {.offset=SKOFS, .type=T2SORT_INT32_T, .order=1}
     }; 
-    t2sort_h sort;
+    t2sort_h sort; //flag |= T2SORT_DIO;
     sort = t2sort_init(trlen, nkey, keys, bsize, wioq, flag);
 
     int fd = open(TESTFD, O_RDWR); assert(fd>=0);

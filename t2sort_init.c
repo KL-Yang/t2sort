@@ -54,7 +54,7 @@ static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 /**
  * Add DIO flag later after handling alignment issue
  * */
-static void t2_init_scratch(t2sort_t *h)
+static void t2_init_scratch(t2sort_t *h, int flag)
 {
     strcpy(h->fd_name, "delete_d_XXXXXX");
     mkstemp(h->fd_name);
@@ -62,8 +62,8 @@ static void t2_init_scratch(t2sort_t *h)
     mkstemp(scratchname_k);
     printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
             h->fd_name, scratchname_k);
-    //h->fd = open(h->fd_name, O_RDWR|O_CREAT|O_DIRECT,
-    h->fd = open(h->fd_name, O_RDWR|O_CREAT,
+    int oflag = (flag&T2SORT_DIO)?(O_DIRECT):(0);
+    h->fd = open(h->fd_name, O_RDWR|O_CREAT|oflag,
             S_IRWXU|S_IRWXG|S_IRWXO);
     h->fd_keys = open(scratchname_k, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);
@@ -89,7 +89,7 @@ t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef,
     h->wioq  = wioq;
     h->flag  = flag;
     h->klen  = t2sort_key_size(ndef, kdef);
-    t2_init_scratch(h);
+    t2_init_scratch(h, flag);
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
 
