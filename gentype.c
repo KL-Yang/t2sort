@@ -5,13 +5,13 @@
 #include "gentype_gen.c"
 
 /**
- * @brief get the index of compare and copy key function pointer
+ * @brief Get the index of compare and copy key function pointer
  * @param ndef : number of key definitions
  * @param kdef : kdef->type of T2SORT_INT32_T, T2SORT_FLOAT, ...
  * return the corresponding gentype.py func-pointer array index.
  * */
 static int 
-t2sort_get_func_index(int ndef, const t2sort_key_def_t *kdef)
+t2sort_get_func_index(int ndef, const t2_kdef_t *kdef)
 {
     int index=-1;
     if(ndef==1)
@@ -25,13 +25,13 @@ t2sort_get_func_index(int ndef, const t2sort_key_def_t *kdef)
 }
 
 /**
- * @brief get compare function for qsort, for 2 to 3 kdef 
+ * @brief Get compare function for qsort, for 2 to 3 kdef 
  * @param ndef : number of kdef, 1, 2 or 3
  * @param kdef : kdef->type of T2SORT_INT32, ... types
  * return the function pointer of corresponding compare function.
  * */
 static int 
-(*t2sort_getcmp(int ndef, const t2sort_key_def_t *kdef))
+(*t2sort_getcmp(int ndef, const t2_kdef_t *kdef))
     (const void*,const void*)
 {
     int index = t2sort_get_func_index(ndef, kdef);
@@ -40,15 +40,15 @@ static int
 
 //return the key extraction function
 static void 
-(*t2sort_getcpy(int ndef, const t2sort_key_def_t *kdef))
-    (void*,int,int,const t2sort_key_def_t*,void*)
+(*t2sort_getcpy(int ndef, const t2_kdef_t *kdef))
+    (void*,int,int,const t2_kdef_t*,void*)
 {
     int index = t2sort_get_func_index(ndef, kdef);
     return cpy_funcs[index];
 }
 
 static int
-t2sort_key_size(int ndef, const t2sort_key_def_t *kdef)
+t2sort_key_size(int ndef, const t2_kdef_t *kdef)
 {
     int index = t2sort_get_func_index(ndef, kdef);
     return siz_types[index];

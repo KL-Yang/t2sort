@@ -67,14 +67,14 @@ static void t2_init_scratch(t2sort_t *h, int flag)
 }
 
 t2sort_h
-t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef, 
+t2sort_init(int tlen, int ndef, const t2_kdef_t *kdef, 
     int bsiz, int wioq, int flag)
 {
     t2sort_t *h = calloc(1, sizeof(t2sort_t));
     h->trln = tlen;
     h->ndef = ndef;
-    h->kdef = calloc(ndef, sizeof(t2sort_key_def_t));
-    memcpy(h->kdef, kdef, ndef*sizeof(t2sort_key_def_t));
+    h->kdef = calloc(ndef, sizeof(t2_kdef_t));
+    memcpy(h->kdef, kdef, ndef*sizeof(t2_kdef_t));
 
     t2_init_blk(h, bsiz, wioq, tlen);
     h->wrap = h->pntr*(wioq+1);
