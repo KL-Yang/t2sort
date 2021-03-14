@@ -44,10 +44,9 @@ struct t2sort_que_struct {
     int         flag;
     int         id;
 };
-#define T2SORT_RQUE_SUBMIT  (1<<0)
-#define T2SORT_RQUE_SPLIT   (1<<1)
-#define T2SORT_RQUE_ALLOC   (1<<2)
-#define T2SORT_RQUE_FINISH  (1<<3)
+#define T2_QUE_SUBMIT  (1<<0)
+#define T2_QUE_ALLOC   (1<<1)
+#define T2_QUE_FINISH  (1<<3)
 
 typedef struct t2sort_struct {
     int         fd;         //data file
