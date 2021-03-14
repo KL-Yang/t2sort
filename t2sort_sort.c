@@ -30,6 +30,33 @@ t2_list_rque(t2_que_t *head, void *pkey, int nkey,
     } assert(x<=2*nblk*nblk);
     return realloc(xque, x*sizeof(t2_que_t));
 }
+static int t2_read_issue(t2sort_t *h, t2_que_t *r)
+{
+    int nbr = ring_wrap(h->head, r->ntr, h->wrap);
+    int res = r->ntr-nbr;
+    void *p = h->_base+(h->head%h->wrap)*h->trln;
+    t2_aio_read(&r->aio, h->fd, p, nbr*h->trln, r->seek*h->trln);
+    h->head += nbr;
+    r->ntr  = nbr;
+    xque_enque(&h->wait, r);
+    return res;
+}
+static void try_issue_read(t2sort_t *h, t2_que_t *stub)
+{
+    t2_que_t *x, *y; int left;
+    while(stub->next!=stub && //still can read
+            h->done+h->wrap>=h->head+stub->next->ntr) {
+        x = xque_deque(stub); assert(x!=stub && x->ntr!=0);
+        if((left=t2_read_issue(h, x))!=0) {
+            y = calloc(1, sizeof(t2_que_t));
+            y->flag |= T2_QUE_ALLOC;
+            y->ntr  = left;
+            y->blk  = x->blk;
+            y->seek = x->seek+x->ntr;
+            left = t2_read_issue(h, y); assert(left==0);
+        }
+    }
+}
 
 int t2sort_sort(t2sort_h h)
 {
@@ -75,6 +102,7 @@ int t2sort_sort(t2sort_h h)
 
     //Initiate for t2sort_read()
     h->head = h->tail = h->done = h->nfly = 0;
+    try_issue_read(h, &h->read);
 
     return 0;
 }
