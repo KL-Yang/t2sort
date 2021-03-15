@@ -8,6 +8,7 @@ int t2sort_close(t2sort_h h)
     free(t->kdef);
     free(t->_base);
     free(t->_xque);
+    free(t->_pkey);
     free(t);
     return 0;
 }

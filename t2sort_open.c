@@ -96,6 +96,7 @@ t2sort_open(int tlen, int ndef, const t2_kdef_t *kdef,
     h->_xque = calloc((wioq+2), sizeof(t2_que_t));
     for(int i=0; i<(wioq+2); i++) 
         xque_enque(&h->read, &h->_xque[i]);
+    h->_pkey = malloc(h->bntr*h->klen);
 
     return (t2sort_h)h;
 }

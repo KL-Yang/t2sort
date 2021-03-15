@@ -20,9 +20,8 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
 
     if(h->done==h->tail) {    //data exhausted
         int nsort = t2_wait_rblock(&h->wait, h->bntr);
-        void *pkey = t2_list_keys(h, nsort);
-        t2_sort_block(h, pkey, nsort);
-        free(pkey);
+        t2_list_keys(h, nsort);
+        t2_sort_block(h, h->_pkey, nsort);
         h->tail+=nsort;
     }
 

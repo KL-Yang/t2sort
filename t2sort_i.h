@@ -75,6 +75,8 @@ typedef struct t2sort_struct {
 //////////////////////////////////////////////
     void      *_base;
     t2_que_t  *_xque;
+    void      *_pkey;
+    //int       *_pmap;
 } t2sort_t;
 
 int dbg_gen_key(int kmin, int kmax);

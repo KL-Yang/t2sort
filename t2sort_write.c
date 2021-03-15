@@ -7,16 +7,14 @@ static int ring_wrap(int i, int d, int n)   //maximum d without wrap
     return r;
 }
 
-static void *t2_list_keys(t2sort_t *h, int nsort)
+static void t2_list_keys(t2sort_t *h, int nsort)
 {
     int nowrap = ring_wrap(h->tail, nsort, h->wrap);
-    void *pkey = malloc(nsort*h->klen);
     void *buff = h->_base+(h->tail%h->wrap)*h->trln;
-    h->func_cpy_key(buff, h->trln, nowrap, h->kdef, pkey);
+    h->func_cpy_key(buff, h->trln, nowrap, h->kdef, h->_pkey);
     if(nowrap<nsort)
         h->func_cpy_key(h->_base, h->trln, nsort-nowrap, 
-                h->kdef, pkey+nowrap*h->klen);
-    return pkey;
+                h->kdef, h->_pkey+nowrap*h->klen);
 }
 
 static void t2_sort_block(t2sort_t *h, void *pkey, int nkey) 
@@ -40,27 +38,25 @@ static void t2_sort_block(t2sort_t *h, void *pkey, int nkey)
 
 static void t2_flush_block(t2sort_t *h, int nsort)
 {
-    void *key, *p;
-    key = t2_list_keys(h, nsort);
-    t2_sort_block(h, key, nsort);
+    t2_list_keys(h, nsort);
+    t2_sort_block(h, h->_pkey, nsort);
     for(int i=0; i<nsort; i++) {
-        ((t2_pay_t*)(key+i*h->klen))->bpi.blk = h->nblk;
-        ((t2_pay_t*)(key+i*h->klen))->bpi.idx = i;
+        ((t2_pay_t*)(h->_pkey+i*h->klen))->bpi.blk = h->nblk;
+        ((t2_pay_t*)(h->_pkey+i*h->klen))->bpi.idx = i;
     }
     h->nblk++;
-    write(h->fd_keys, key, nsort*h->klen);
+    write(h->fd_keys, h->_pkey, nsort*h->klen);
     for(int i=0; i<nsort; i+=h->pntr) {
         t2_que_t *xque = xque_deque(&h->read); 
         assert(xque!=&h->read); //que exhausted
         //xque->ntr = MIN(h->pntr, nsort-i);
         xque->ntr = h->pntr;    //last pile may have some garbage
-        p = h->_base+(h->tail%h->wrap)*h->trln;
+        void *p = h->_base+(h->tail%h->wrap)*h->trln;
         t2_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
                 h->tail*h->trln);
         h->tail += xque->ntr;
         xque_enque(&h->wait, xque);
     }
-    free(key);
 }
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
@@ -76,7 +72,6 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         assert(xque!=&h->wait && xque->ntr);
         t2_aio_wait(&xque->aio, 1);
         h->done+=xque->ntr;
-        //memset(xque, 0, sizeof(t2_que_t));  //for safty!
         xque_enque(&h->read, xque);
     }
     void *praw = h->_base+(h->head%h->wrap)*h->trln;
