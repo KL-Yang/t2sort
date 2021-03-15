@@ -15,7 +15,7 @@ typedef struct {
 typedef t2sort_key_def_t t2sort_key_t;
 
 /**
- * @brief initiate the sort handle
+ * @brief open the sort handle, opaque handle like return from open(2)
  * @param tlen : trace length in bytes
  * @param ndef : number of keys, maximum 3 group keys and 3 sub keys
  * @param kdef : definition of keys
@@ -25,7 +25,7 @@ typedef t2sort_key_def_t t2sort_key_t;
  * use DIO and io_submit (Linux AIO) by default!
  * */
 t2sort_h
-t2sort_init(int tlen, int ndef, const t2sort_key_def_t *kdef, int bsize, int wioq, int flag);
+t2sort_open(int tlen, int ndef, const t2sort_key_def_t *kdef, int bsize, int wioq, int flag);
 
 /**
  * @brief zero copy write io, exposed internal buffer
@@ -69,5 +69,5 @@ const void * t2sort_readraw(t2sort_h h, int *ntr);
 /**
  * @brief release all the resources
  * */
-int t2sort_destroy(t2sort_h h);
+int t2sort_close(t2sort_h h);
 #endif

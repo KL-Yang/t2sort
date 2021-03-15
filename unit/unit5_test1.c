@@ -35,7 +35,7 @@ int main()
         {.offset=SKOFS, .type=T2SORT_INT32_T, .order=1}
     }; 
     t2sort_h sort; //flag |= T2SORT_DIO;
-    sort = t2sort_init(trlen, nkey, keys, bsize, wioq, flag);
+    sort = t2sort_open(trlen, nkey, keys, bsize, wioq, flag);
 
     int fd = open(TESTFD, O_RDWR); assert(fd>=0);
     void *buff = calloc(batch, TRLEN);
@@ -59,7 +59,7 @@ int main()
         write(fd, buff, nread*TRLEN);
         left -= nread;
     }
-    t2sort_destroy(sort);
+    t2sort_close(sort);
     
     check_file_order(fd, ninst, TRLEN, keys);
 

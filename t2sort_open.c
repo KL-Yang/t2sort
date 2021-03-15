@@ -67,7 +67,7 @@ static void t2_init_scratch(t2sort_t *h, int flag)
 }
 
 t2sort_h
-t2sort_init(int tlen, int ndef, const t2_kdef_t *kdef, 
+t2sort_open(int tlen, int ndef, const t2_kdef_t *kdef, 
     int bsiz, int wioq, int flag)
 {
     t2sort_t *h = calloc(1, sizeof(t2sort_t));
