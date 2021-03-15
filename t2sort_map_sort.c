@@ -1,10 +1,6 @@
-#ifndef C_T2SORT_MAP_T2SORT
-#define C_T2SORT_MAP_T2SORT
+#ifndef C_T2SORT_MAP_SORT_T2SORT
+#define C_T2SORT_MAP_SORT_T2SORT
 /**
- * Cannot use pointer map instead of index map, as pointer will 
- * not give enough information to create a linked list.
- *   1. in ideal case the memcpys form a single linked loop
- *   2. actually it is breaked into many small linked loops
  * @param p    : traces, originally out of order
  * @param n    : number of traces
  * @param m    : sorted map
@@ -31,18 +27,5 @@ t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
             j = src;
         }
     }
-}
-
-//this is dumb version use much more memory
-void dbg_map_sort2(void **p, int n, int *m, int64_t len)
-{
-    void *x = calloc(n, len);
-    for(int i=0, j; i<n; i++) {
-        j = m[i];
-        memcpy(x+i*len, p[j], len);
-    }
-    for(int i=0; i<n; i++) 
-        memcpy(p[i], x+i*len, len);
-    free(x);
 }
 #endif

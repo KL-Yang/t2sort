@@ -1,5 +1,5 @@
-#ifndef C_T2SORT_INIT_T2SORT
-#define C_T2SORT_INIT_T2SORT
+#ifndef C_T2SORT_OPEN_T2SORT
+#define C_T2SORT_OPEN_T2SORT
 
 static void t2_factor(int a, int *f)
 {

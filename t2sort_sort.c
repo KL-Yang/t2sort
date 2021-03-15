@@ -1,5 +1,5 @@
-#ifndef C_T2SORT_RESET_T2SORT
-#define C_T2SORT_RESET_T2SORT
+#ifndef C_T2SORT_SORT_T2SORT
+#define C_T2SORT_SORT_T2SORT
 
 //build the queue, break all read large than pntr!
 static t2_que_t *
