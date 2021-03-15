@@ -13,7 +13,7 @@ static int t2_wait_rblock(t2_que_t *stub, int bntr)
     };
     return ntr;
 }
-const void * t2sort_readraw(t2sort_t *h, int *ntr)
+void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->done += h->nfly;
     try_issue_read(h, &h->read);

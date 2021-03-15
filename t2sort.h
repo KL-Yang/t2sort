@@ -64,7 +64,7 @@ int t2sort_read(t2sort_h h, void *p, int ntr);
  * user is expect to read from the buff for ntr traces.
  * exposed ntr must be less or equal to expected.
  * */
-const void * t2sort_readraw(t2sort_h h, int *ntr);
+void * t2sort_readraw(t2sort_h h, int *ntr);
 
 /**
  * @brief release all the resources
