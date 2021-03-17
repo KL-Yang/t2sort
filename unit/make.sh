@@ -1,10 +1,23 @@
 #!/bin/bash
 
-flag="-W -Wall -O0 -ggdb"
+flag="-W -Wall -O3 -ggdb"
 
 #gcc $flag unit5_test1.c -o unit5_test1 -lm -lrt ../t2sort.o 
 #./unit5_test1
 #exit
+
+########## unit test-3
+gcc $flag unit3_type.c -o unit3
+#./unit3
+exit
+
+########## unit test-2
+g++ $flag -Wno-pointer-arith unit2_sort.cpp -o unit2
+time ./unit2 50000000 0
+time ./unit2 50000000 1
+time ./unit2 50000000 2
+#c99 qsort is faster
+exit
 
 ########## unit test-1
 python3 ../gentype.py header > gentype_gen.h
@@ -16,13 +29,7 @@ for ninst in {2001..10000..1333}; do
         ./unit1_map $trlen $ninst
     done
 done
-exit
 
-########## unit test-2
-python3 ../gentype.py header > x_del_unit3_type.h
-python3 ../gentype.py debug  > x_del_unit3_type.c
-gcc $flag unit3_type.c -o unit3
-#./unit3
 
 gcc $flag unit4_gendata.c -o unit4_gendata -lm
 #./unit4_gendata
