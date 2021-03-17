@@ -9,6 +9,11 @@ python3 ../gentype.py debug  > ../gentype_gen.c
 #./unit5_test1
 #exit
 
+########## unit test-4
+gcc $flag unit4_gendata.c -o unit4 -lm
+./unit4 1223 100231 111 gendata2.dat
+exit
+
 ########## unit test-3
 gcc $flag -Wno-unused-function unit3_type.c -o unit3
 ./unit3
@@ -30,10 +35,6 @@ for ninst in {2001..10000..1333}; do
         ./unit1_map $trlen $ninst
     done
 done
-
-
-gcc $flag unit4_gendata.c -o unit4_gendata -lm
-#./unit4_gendata
 
 gcc $flag unit5_test1.c -o unit5_test1 -lm ../t2sort.o
 ./unit5_test1

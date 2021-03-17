@@ -1,66 +1,41 @@
 #include "common.h"
 #include "../t2sort_debug.c"
 
-static int gen_key(int kmin, int kmax)
-{
-    int key;
-    key = nearbyint(kmin+(kmax-kmin)*(random()*1.0/RAND_MAX));
-    return key;
-}
-
-/**
- * @brief generate data and keys
- * @param p,n,len : buffer, number of trace, trace length in byte
- * @param gofs,gmin,gmax : offset to group key and min, max
- * @param sofs,smin,smax : offset to sub key and min, max
- * Except key, all other samples are float with gkey.skey form.
- * If limit key to 3 digit, float number can accurately represent
- *  6 valid digts, and data can be verified later.
- * */
-void gen_data(void *p, int n, size_t len, 
-    int gofs, int gmin, int gmax, 
-    int sofs, int smin, int smax)
-{
-    //integer and float alignment!
-    assert(gofs%4==0 && sofs%4==0 && len%4==0);
-    assert(gmin<=gmax && gmax<1000 && gmin>=0);
-    assert(smin<=smax && smax<1000 && smin>=0);
-    int pkey = gen_key(gmin, gmax);
-    int skey = gen_key(smin, smax);
-    int ndat = len/4;
-    float *t = (float*)p;
-    for(int i=0; i<n; i++) {
-        for(int j=0; j<ndat; j++)
-            t[j]=pkey+skey*1E-3;    //3digit accuracy
-        ((int*)((void*)t+gofs))[0] = pkey;
-        ((int*)((void*)t+sofs))[0] = skey;
-        t += ndat;
-    }
-}
-
-#define TRLEN   (1223*sizeof(float))
 #define GKOFS   0
 #define GKMIN   1
 #define GKMAX   200
 #define SKOFS   4
 #define SKMIN   1
 #define SKMAX   900 
-int main()
+
+int main(int argc, char *argv[])
 {
-    unsigned int seed = 101;
-    int ntrace = 100231, batch=10000;
-    srandom(seed);
-    int fd=open("gendata1.dat", O_RDWR|O_CREAT,
-                S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    void *buf = calloc(batch, TRLEN);
-    for(int i=0, j=0; i<ntrace; i+=batch, j++) {
-        int ngen = MIN(batch, ntrace-i);
+    if(argc!=5) {
+        printf("Usage: %s trlen ninst rseed filename\n"
+               "   trlen - trace length in number of floats\n"
+               "   ninst - number of instance\n"
+               "   rseed - random number seeds\n"
+               "   filename - output file name\n", argv[0]);
+        exit(1);
+    }
+    const char *fname; void *buf;
+    unsigned int rseed; int ninst, trlen, fdd, batch=10000;
+    trlen = atoi(argv[1])*sizeof(float);
+    ninst = atoi(argv[2]);
+    rseed = atoi(argv[3]);
+    fname = argv[4];
+
+    srandom(rseed);
+    buf = calloc(batch, trlen);
+    fdd = open(fname, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    for(int i=0, j=0, ngen; i<ninst; i+=batch, j++) {
+        ngen = MIN(batch, ninst-i);
         printf("write batch[%02d]=%d\n", j, ngen);
-        dbg_gen_data(buf, ngen, TRLEN, GKOFS, GKMIN, GKMAX,
-            SKOFS, SKMIN, SKMAX);
-        write(fd, buf, ngen*TRLEN);
+        dbg_gen_data(buf, ngen, trlen, GKOFS, GKMIN, GKMAX,
+                SKOFS, SKMIN, SKMAX);
+        write(fdd, buf, ngen*trlen);
     }
     free(buf);
-    close(fd);
+    close(fdd);
     return 0;
 }
