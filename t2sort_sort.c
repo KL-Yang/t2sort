@@ -77,7 +77,7 @@ int t2sort_sort(t2sort_h h)
     }
     h->nkey = h->head;
 
-    dbg_blocks_check(h);
+    //dbg_blocks_check(h);
     printf("checked!, nkey=%ld\n", h->nkey); fflush(0);
 
     //3. read and sort all keys

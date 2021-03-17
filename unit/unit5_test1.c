@@ -2,12 +2,12 @@
 #include "../t2sort.h"
 #include "../gentype_gen.h"
 
-void 
-check_file_order(int fd, int ninst, int trlen, 
-        t2sort_key_def_t *kdef)
+void check_file_order(int fd, int trlen, t2sort_key_def_t *kdef)
 {
-    void *buff;
-    buff = calloc(ninst, trlen);
+    void *buff; int ninst;
+    off_t length = lseek(fd, 0, SEEK_END);
+    ninst = length/trlen;  assert(length%trlen==0);
+    buff  = calloc(ninst, trlen);
     pread(fd, buff, ninst*trlen, 0);
     dbg_keys_valid(buff, ninst, trlen, 
             kdef[0].offset, kdef[1].offset);
@@ -19,52 +19,67 @@ check_file_order(int fd, int ninst, int trlen,
     printf("%s() done!\n", __func__);
 }
 
-#define TRLEN   (1223*sizeof(float))
-#define NINST   100231  //from unit4
-#define GKOFS   0
-#define SKOFS   4
-#define TESTFD  "gendata1.dat"
-#define TESTOU  "unit5_gendata1.dat"
-#define MB      (1024L*1024L)
-int main()
+int main(int argc, char *argv[])
 {
-    int trlen = TRLEN, nkey = 2, bsize=60, wioq = 4;
-    int flag=0, batch=500, nread, ninst=NINST;
-    t2sort_key_def_t keys[] = {
-        {.offset=GKOFS, .type=T2SORT_INT32_T, .order=1},
-        {.offset=SKOFS, .type=T2SORT_INT32_T, .order=1}
+    if(argc!=8) {
+        printf("Usage: %s trlen bsize npile filein fileout dio check\n"
+               "   trlen   - trace length in number of floats\n"
+               "   bsize   - prefered buffer size in MiB\n"
+               "   npile   - number of piles per block\n"
+               "   filein  - input data file name\n"
+               "   fileout - output data file name\n"
+               "   dio     - 1 dio, 0 not dio\n"
+	       "   check   - 1 check, 0 not check\n", argv[0]);
+        exit(1);
+    }
+    int trlen, bsize, npile, dflag, check; const char *fname, *fsort;
+    trlen = atoi(argv[1])*sizeof(float);
+    bsize = atoi(argv[2]);
+    npile = atoi(argv[3]);  //piles per block
+    fname = argv[4];
+    fsort = argv[5];
+    dflag = atoi(argv[6]);
+    check = atoi(argv[7]);
+
+    t2sort_key_def_t kdef[] = {
+        {.offset=0, .type=T2SORT_INT32_T, .order=1},
+        {.offset=4, .type=T2SORT_INT32_T, .order=1}
     }; 
+    int flag=0, fdi, fdo, batch=500, ninst=0, nread; void *buf;
+    if(dflag==1) flag |= T2SORT_DIO;
+
     t2sort_h sort; //flag |= T2SORT_DIO;
-    sort = t2sort_open(trlen, nkey, keys, bsize, wioq, flag);
+    sort = t2sort_open(trlen, 2, kdef, bsize, npile, flag);
 
-    int fd = open(TESTFD, O_RDWR); assert(fd>=0);
-    void *buff = calloc(batch, TRLEN);
+    fdi = open(fname, O_RDWR);
+    fdo = open(fsort, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    assert(fdi>=0 && fdo>=0);
+
+    buf = calloc(batch, trlen);
     do {
-        nread = read(fd, buff, batch*TRLEN);
-        assert(nread%TRLEN==0);
-        nread = nread/TRLEN;
-        t2sort_write(sort, buff, nread);
+        nread = read(fdi, buf, batch*trlen);
+        assert(nread%trlen==0 && nread>=0);
+        nread = nread/trlen;
+        t2sort_write(sort, buf, nread);
+        ninst += nread;
     } while(nread>0);
-    close(fd);
+    printf("Total read instance %d\n", ninst);
+    close(fdi);
 
-    //open and read file, call t2sort_dump()
     t2sort_sort(sort);
-
-    int left=ninst;
-    fd = open(TESTOU, O_RDWR|O_CREAT,
-                S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    while(left>0) {
-        nread = t2sort_read(sort, buff, batch);
-        printf(" nread=%6d left=%8d\n", nread, left);
-        write(fd, buff, nread*TRLEN);
-        left -= nread;
+    while(ninst>0) {
+        nread = t2sort_read(sort, buf, batch);
+        //printf(" nread=%6d left=%8d\n", nread, ninst);
+        write(fdo, buf, nread*trlen);
+        ninst-= nread;
     }
     t2sort_close(sort);
     
-    check_file_order(fd, ninst, TRLEN, keys);
+    if(check==1)
+        check_file_order(fdo, trlen, kdef);
 
-    close(fd);
-    free(buff);
-    printf("runs to the end!\n");
+    close(fdo);
+    free(buf);
+    printf("Runs to the end!\n");
     return 0;
 }
