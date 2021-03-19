@@ -21,7 +21,6 @@ static int t2_rcap(int64_t *xb, int x0, int trln, int64_t wrap)
 }
 static int t2_rcap2(int64_t *xb, int ftr, int trln, int64_t wrap)
 {   
-    //int ncap, madr=(*xb)%wrap-x0; assert(madr>=0);
     int ncap, size, mgap;
     mgap = (ftr*trln)%PAGE_SIZE;
     size = wrap-(*xb)%wrap-mgap;
@@ -106,7 +105,8 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
 {
     t2_que_t *xque; 
     int f[nblk], n[nblk], x=0, ncap, nque; 
-    int64_t xbase=PAGE_SIZE, xwrap=(bntr+pntr)*tlen;
+    //int64_t xbase=PAGE_SIZE, xwrap=(bntr+pntr)*tlen;
+    int64_t xbase=0, xwrap=(bntr+pntr)*tlen;
     nque = MAX(nblk*(bntr/pntr+1)+nblk, 2*nblk*nblk+nblk);
     xque = calloc(nque, sizeof(t2_que_t));
     memset(f, 0, nblk*sizeof(int));
@@ -123,23 +123,34 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                 xque[x].id   = x;
                 //memory range for read!
                 ext0 = t2_ext0(f[i]*tlen);
-                ncap = t2_rcap(&xbase, ext0, tlen, xwrap);
-                //ncap = t2_rcap2(&xbase, f[i], tlen, xwrap);
+                //ncap = t2_rcap(&xbase, ext0, tlen, xwrap);
+                ncap = t2_rcap2(&xbase, f[i], tlen, xwrap);
                 xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
                 xque[x].Ma  = xbase; //one page gap
+                if(ext1+ext0>PAGE_SIZE || ((xbase%xwrap==0)&&ext0>0))
+                    xque[x].Ma += PAGE_SIZE;
                 xque[x].ma  = xque[x].Ma-ext0;
+                if(x>0) {
+                    if(xque[x].ma/xwrap==xque[x-1].mz/xwrap) {
+                        if(xque[x].ma-xque[x-1].mz>PAGE_SIZE)
+                            abort();
+                        if(xque[x].ma<xque[x-1].mz)
+                            abort();
+                    }
+                }
                 xque[x].mz  = xque[x].ma+xque[x].ntr*tlen;
                 xque[x].Mz  = xque[x].mz;
                 if((ext1=xque[x].mz%PAGE_SIZE)!=0)
                     xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
+                else ext1=PAGE_SIZE;
+                //NOTE: here ext1 maps to 1->PAGE_SIZE;
+                //ext0 maps to 0->PAGE_SIZE-1
 
                 assert(xque[x].Mz>=xque[x].mz);
                 assert((xque[x].Mz-1)/xwrap==xque[x].mz/xwrap);
                 t2_que_t *item=&xque[x];
                 assert((item->ma-1)/xwrap==(item->Mz-1)/xwrap);
-                if((xbase=xque[x].Mz+PAGE_SIZE)%xwrap==0)
-                    xbase+=PAGE_SIZE;   //start new wrap
-                assert(xbase%xwrap!=0);
+                xbase = xque[x].Mz;
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
                 xque_enque(head, &xque[x]);
