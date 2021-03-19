@@ -1,74 +1,6 @@
 #ifndef C_T2SORT_SORT_T2SORT
 #define C_T2SORT_SORT_T2SORT
 
-//build the queue, break all read large than pntr!
-static t2_que_t *
-t2_list_rque(t2_que_t *head, void *pkey, int nkey, 
-        int klen, int bntr, int nblk, int pntr)
-{
-    nblk = ceilf(nkey*1.0f/bntr);
-    int f[nblk], n[nblk], x=0; t2_que_t *xque;
-    xque = calloc(2*nblk*nblk, sizeof(t2_que_t));
-    memset(f, 0, nblk*sizeof(int));
-    for(int k=0, xntr; k<nkey; k+=bntr) {
-        xntr = MIN(bntr, nkey-k);
-        memset(n, 0, nblk*sizeof(int));
-        for(int j=0; j<xntr; j++, pkey+=klen)
-            n[((t2_pay_t*)pkey)->bpi.blk]++;
-        for(int i=0; i<nblk; i++) {
-            while(n[i]!=0) {
-                xque[x].ntr  = MIN(n[i], pntr);
-                xque[x].blk  = i;
-                xque[x].seek = i*bntr+f[i];
-                xque[x].id   = x;
-                f[i] += xque[x].ntr;
-                n[i] -= xque[x].ntr;
-                xque_enque(head, &xque[x]);
-                x++;
-            }
-        }
-    } assert(x<=2*nblk*nblk);
-    return realloc(xque, x*sizeof(t2_que_t));
-}
-static int t2_read_issue(t2sort_t *h, t2_que_t *r)
-{
-    int nbr = ring_wrap(h->head, r->ntr, h->wrap);
-    int res = r->ntr-nbr;
-    void *p = h->_base+(h->head%h->wrap)*h->trln;
-    t2_aio_read(&r->aio, h->fd, p, nbr*h->trln, r->seek*h->trln);
-    h->head += nbr;
-    r->ntr  = nbr;
-    xque_enque(&h->wait, r);
-    return res;
-}
-static void try_issue_read(t2sort_t *h, t2_que_t *stub)
-{
-    t2_que_t *x, *y; int left;
-    while(stub->next!=stub && //still can read
-            h->done+h->wrap>=h->head+stub->next->ntr) {
-        x = xque_deque(stub); assert(x!=stub && x->ntr!=0);
-        if((left=t2_read_issue(h, x))!=0) {
-            y = calloc(1, sizeof(t2_que_t));
-            y->flag |= T2_QUE_ALLOC;
-            y->ntr  = left;
-            y->blk  = x->blk;
-            y->seek = x->seek+x->ntr;
-            left = t2_read_issue(h, y); assert(left==0);
-        }
-    }
-}
-
-static t2_blk_t *t2_init_rblk(int nblk, int bntr)
-{
-    t2_blk_t *blks = calloc(nblk, sizeof(t2_blk_t));
-    for(int i=0; i<nblk; i++) {
-        blks[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
-        //blks[i].head = blks[i].tail = i*bntr;
-    }
-    return blks;
-}
-
-
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
@@ -100,10 +32,10 @@ int t2sort_sort(t2sort_h h)
     h->read.prev = h->read.next = &h->read;
     h->DONe.prev = h->DONe.next = &h->DONe;
 
-    h->_rblk = t2_init_rblk(h->nblk, h->bntr);
+    h->_rblk = calloc(h->nblk, sizeof(t2_blk_t));
+    for(int i=0; i<h->nblk; i++) 
+        h->_rblk[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
     h->_wrap = (h->bntr+h->pntr)*h->trln;
-    //h->_xque = t2_list_rque(&h->read, key, h->nkey, h->klen, 
-    //        h->bntr, h->nblk, h->pntr);
     h->_xque = t2_list_rque2(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr, h->trln);
     //debug

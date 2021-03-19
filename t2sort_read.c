@@ -7,8 +7,6 @@ t2_wait_rblock(t2sort_t *h, t2_que_t *wait, int bntr, t2_que_t *DONe)
     int ntr=0;
     while(wait->next!=wait && ntr<bntr) {
         t2_que_t *xque=xque_deque(wait);
-        printf("%s: id=%3d ntr=%4d total=%d\n", __func__,
-                xque->id, xque->ntr, ntr);
         t2_aio_wait(&xque->aio, 1);
         if(xque->ma!=xque->Ma)
             memcpy(h->_base+xque->ma%h->_wrap,
@@ -16,7 +14,6 @@ t2_wait_rblock(t2sort_t *h, t2_que_t *wait, int bntr, t2_que_t *DONe)
         if(xque->Mz!=xque->mz)
             memcpy(h->_rblk[xque->blk].page, 
                 h->_base+xque->mz%h->_wrap, xque->Mz-xque->mz);
-
         h->func_cpy_key(h->_base+xque->ma%h->_wrap, h->trln, 
                 xque->ntr, h->kdef, h->_pkey+ntr*h->klen);
         ntr += xque->ntr;
@@ -27,7 +24,6 @@ t2_wait_rblock(t2sort_t *h, t2_que_t *wait, int bntr, t2_que_t *DONe)
 
 void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
-    h->done += h->nfly;
     h->DONe.next->ma  += h->nfly*h->trln;
     h->DONe.next->ntr -= h->nfly;
 
@@ -36,11 +32,9 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
     //make sure submit not overrun on buffers
     if(h->DONe.next==&h->DONe) {
         //data exhausted, sort a block!
-        assert(h->done==h->tail);
         int nsort = t2_wait_rblock(h, &h->wait, h->bntr, &h->DONe);
         t2_sort_block(h, h->_pkey, nsort);
-        h->tail+=nsort;
-        printf("%s: sort a block\n", __func__);
+/*        printf("%s: sort a block\n", __func__);
         t2_que_t *x=h->DONe.next;
         while(x!=&h->DONe) {
             printf("  DONE id=%3d ntr=%d\n", x->id, x->ntr);
@@ -52,20 +46,13 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
                     h->kdef[0].offset, h->kdef[1].offset);
             fflush(0);
             x = x->next;
-        }
+        } */
     }
     //Check if DONe queue left room, submit new read!
     t2_read_submit(h, &h->read);
-    //no need to check wrap anymore, already handled!!!
-    //from h->DONe get an item
-    //assert(h->DONe.next->ntr!=0);   //has something to handout!
     *ntr = MIN((*ntr), h->DONe.next->ntr);
     h->nfly = (*ntr);
-    printf("%s: return id=%3d ntr=%4ld left=%4d\n", __func__, 
-            h->DONe.next->id, h->nfly, h->DONe.next->ntr);
-    fflush(0);
-    void *praw = h->_base+(h->DONe.next->ma)%h->_wrap;
-    return praw;
+    return h->_base+(h->DONe.next->ma)%h->_wrap;
 }
 
 int t2sort_read(t2sort_h h, void *p, int ntr)

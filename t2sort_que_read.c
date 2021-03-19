@@ -37,8 +37,9 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
     nblk = ceilf(nkey*1.0f/bntr);
     int f[nblk], n[nblk], x=0; t2_que_t *xque; 
     int64_t xbase=0, xwrap=(bntr+pntr)*tlen;
-    int x0=0, x1=0, ncap;
-    xque = calloc(2*nblk*nblk+nblk, sizeof(t2_que_t));
+    int x0=0, x1=0, ncap, nque;
+    nque = MAX(nblk*(bntr/pntr+1)+nblk, 2*nblk*nblk+nblk);
+    xque = calloc(nque, sizeof(t2_que_t));
     memset(f, 0, nblk*sizeof(int));
     for(int k=0, xntr; k<nkey; k+=bntr) {
         xntr = MIN(bntr, nkey-k);
@@ -94,7 +95,7 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                 x++;
             }
         }
-    } assert(x<=2*nblk*nblk+nblk);
+    } assert(x<=nque);
     printf("%s: total read queue=%d\n", __func__, x);
     return realloc(xque, x*sizeof(t2_que_t));
 }

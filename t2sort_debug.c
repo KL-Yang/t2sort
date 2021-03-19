@@ -33,7 +33,7 @@ void dbg_gen_data(void *p, int n, size_t len,
 void dbg_keys_valid(void *p, int n, int len, int gofs, int sofs)
 {
     assert(gofs%4==0 && sofs%4==0 && len%4==0);
-    assert(n>=2 && gofs<len && sofs<len && gofs!=sofs);
+    assert(n>=1 && gofs<len && sofs<len && gofs!=sofs);
     void *p0=p, *p1=p+len; int error=0;
     for(int i=0; i<n-1; i++, p0+=len, p1+=len) {
         int pk0 = ((int*)(p0+gofs))[0];
