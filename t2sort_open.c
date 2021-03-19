@@ -38,6 +38,7 @@ static t2_que_t *xque_deque(t2_que_t *stub)
 {
     t2_que_t *head = stub->next;
     stub->next = head->next;    //note head may be stub!
+    head->next->prev = stub;
     return head;
 }
 
