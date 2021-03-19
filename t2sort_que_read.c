@@ -5,28 +5,19 @@
  *        --|---------|---------|---------|----=====|
  *       ext0            page              ext1     ^ xbase
  * */
-static int t2_ext0(int64_t faddr)
-{   return (PAGE_SIZE-faddr%PAGE_SIZE)%PAGE_SIZE; }
+static int t2_ext0(int64_t addr)
+{   return (PAGE_SIZE-addr%PAGE_SIZE)%PAGE_SIZE; }
+static int t2_ext1(int64_t addr)
+{   return (addr-1)%PAGE_SIZE+1; }
 
-static int t2_rcap(int64_t *xb, int x0, int trln, int64_t wrap)
-{   
-    int ncap, madr=(*xb)%wrap-x0; assert(madr>=0);
-    if((ncap=(wrap-madr)/trln)<=0) {
-        *xb += (wrap-(*xb)%wrap)%wrap;
-        if(x0!=0)   //new block with additional page
-            *xb += PAGE_SIZE;
-        ncap = t2_rcap(xb, x0, trln, wrap);
-    } assert(ncap>0);
-    return ncap;
-}
-static int t2_rcap2(int64_t *xb, int ftr, int trln, int64_t wrap)
+static int t2_rcap(int64_t *xb, int ftr, int trln, int64_t wrap)
 {   
     int ncap, size, mgap;
     mgap = (ftr*trln)%PAGE_SIZE;
     size = wrap-(*xb)%wrap-mgap;
     if((ncap=size/trln)<=0) {
         *xb += (wrap-(*xb)%wrap)%wrap;
-        ncap = t2_rcap2(xb, ftr, trln, wrap);
+        ncap = t2_rcap(xb, ftr, trln, wrap);
     } assert(ncap>0);
     return ncap;
 }
@@ -49,8 +40,17 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
         for(int j=0; j<xntr; j++, pkey+=klen)
             nn[((t2_pay_t*)pkey)->bpi.blk]++;
     }
-    //int nque=0, f[nblk]={0};
-}
+} /*
+static void //create a memory list
+t2_list(int *nn, int nblk, int tlen)
+{
+    int nque=0, f[nblk]; memset(f, 0, nblk*sizeof(float));
+    for(int k=0; k<nblk; k++, nn+=nblk) 
+        for(int i=0; i<nblk; i++) {
+            ext0 = t2_ext0(f[i]*tlen);
+            ncap = t2_rcap(&xbase, f[i], tlen, xwrap);
+        }
+} */
 /*
 static t2_que_t *
 t2_rque(t2_que_t *head, int *n, int nblk, int trln, int wrap) 
@@ -123,8 +123,7 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                 xque[x].id   = x;
                 //memory range for read!
                 ext0 = t2_ext0(f[i]*tlen);
-                //ncap = t2_rcap(&xbase, ext0, tlen, xwrap);
-                ncap = t2_rcap2(&xbase, f[i], tlen, xwrap);
+                ncap = t2_rcap(&xbase, f[i], tlen, xwrap);
                 xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
                 xque[x].Ma  = xbase; //one page gap
                 if(ext1+ext0>PAGE_SIZE || ((xbase%xwrap==0)&&ext0>0))
@@ -139,10 +138,9 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                     }
                 }
                 xque[x].mz  = xque[x].ma+xque[x].ntr*tlen;
-                xque[x].Mz  = xque[x].mz;
-                if((ext1=xque[x].mz%PAGE_SIZE)!=0)
-                    xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
-                else ext1=PAGE_SIZE;
+                ext1 = t2_ext1(xque[x].mz);
+                xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
+
                 //NOTE: here ext1 maps to 1->PAGE_SIZE;
                 //ext0 maps to 0->PAGE_SIZE-1
 
