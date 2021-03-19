@@ -54,23 +54,10 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                 xque[x].id   = x;
                 //memory range for read!
                 x0 = t2_extra_tail(f[i]*tlen);
-                printf("%s-1: queue %2d xbase=%14ld\n",
-                     __func__, x, xbase);
-                if(x0!=0) {
-                    if(xbase%xwrap==0) {
-                        xbase += PAGE_SIZE;     //add gap!
-                        printf("%s  : wrap @+4096=%ld!\n", __func__, xbase);
-                        x1 = 0;
-                    } /* else if(x1+x0<=PAGE_SIZE) {
-                        xbase -= PAGE_SIZE;
-                        if(xbase%xwrap==0 && x0!=0)
-                            xbase += PAGE_SIZE;
-                        //printf("%s  : merg @-4096=%ld x1=%4d x0=%4d!\n",
-                        //     __func__, xbase, x1, x0);
-                    } */
+                if(x0!=0 && xbase%xwrap==0) {
+                    xbase += PAGE_SIZE;     //new wrap, add gap
+                    x1 = 0;
                 }
-                printf("%s-2: queue %2d xbase=%14ld\n",
-                     __func__, x, xbase);
                 ncap = t2_align_rcap(&xbase, &x1, x0, tlen, xwrap);
                 xque[x].ntr  = MIN(ncap, MIN(pntr, n[i]));
                 xque[x].Ma   = xbase; //one page gap
@@ -86,8 +73,6 @@ t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen,
                 assert((xque[x].Mz-1)/xwrap==xque[x].mz/xwrap);
                 t2_que_t *item=&xque[x];
                 assert((item->ma-1)/xwrap==(item->Mz-1)/xwrap);
-                printf("%s-3: x0=%4d Ma=%14ld Mz=%14ld x1=%4d\n",
-                   __func__, x0, xque[x].Ma, xque[x].Mz, x1);
                 xbase = xque[x].Mz+PAGE_SIZE;
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
