@@ -67,10 +67,11 @@ void dbg_data_valid(void *p, int n, int len, int gofs, int sofs)
         int pk = ((int*)(p+gofs))[0];
         int sk = ((int*)(p+sofs))[0];
         float val = pk+sk*1E-3;
+        //printf("(%4d) key <%3d,%3d>\n", i, pk, sk); fflush(0);
         for(int j=0; j<len; j+=4)
             if(j!=gofs && j!=sofs) 
-                if(((float*)(p+j))[0]!=val)
-                    error++;
+                if(((float*)(p+j))[0]!=val) {
+                    error++; abort(); }
     }
     if(error) {
         printf("data corruption found! error=%d\n", error);

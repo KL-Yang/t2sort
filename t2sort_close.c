@@ -9,6 +9,9 @@ int t2sort_close(t2sort_h h)
     free(t->_base);
     free(t->_xque);
     free(t->_pkey);
+    for(int i=0; i<t->nblk; i++)
+        free(h->_rblk[i].page);
+    free(t->_rblk);
     free(t);
     return 0;
 }

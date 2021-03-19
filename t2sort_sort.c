@@ -58,6 +58,17 @@ static void try_issue_read(t2sort_t *h, t2_que_t *stub)
     }
 }
 
+static t2_blk_t *t2_init_rblk(int nblk, int bntr)
+{
+    t2_blk_t *blks = calloc(nblk, sizeof(t2_blk_t));
+    for(int i=0; i<nblk; i++) {
+        blks[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
+        //blks[i].head = blks[i].tail = i*bntr;
+    }
+    return blks;
+}
+
+
 int t2sort_sort(t2sort_h h)
 {
     //1. flush piles of the last block
@@ -87,8 +98,14 @@ int t2sort_sort(t2sort_h h)
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
-    h->_xque = t2_list_rque(&h->read, key, h->nkey, h->klen, 
-            h->bntr, h->nblk, h->pntr);
+    h->DONe.prev = h->DONe.next = &h->DONe;
+
+    h->_rblk = t2_init_rblk(h->nblk, h->bntr);
+    h->_wrap = (h->bntr+h->pntr)*h->trln;
+    //h->_xque = t2_list_rque(&h->read, key, h->nkey, h->klen, 
+    //        h->bntr, h->nblk, h->pntr);
+    h->_xque = t2_list_rque2(&h->read, key, h->nkey, h->klen, 
+            h->bntr, h->nblk, h->pntr, h->trln);
     //debug
     int xsum=0; 
     t2_que_t *xhead = h->read.next;
@@ -98,11 +115,14 @@ int t2sort_sort(t2sort_h h)
     }
     printf("%s:total rque ntr=%d\n", __func__, xsum);
     free(key);
+
+    t2_print_queu(&h->read, h->trln, h->wrap);
     //abort();
 
     //Initiate for t2sort_read()
     h->head = h->tail = h->done = h->nfly = 0;
-    try_issue_read(h, &h->read);
+    //try_issue_read(h, &h->read);
+    t2_read_submit(h, &h->read);
 
     return 0;
 }

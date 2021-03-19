@@ -34,3 +34,5 @@
 *.swp
 *_del_*
 delete_*
+*.dat
+unit/unit[1-9]

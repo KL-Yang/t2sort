@@ -1,6 +1,6 @@
 #!/bin/bash
 
-flag="-W -Wall -O2 -ggdb"
+flag="-W -Wall -O0 -ggdb"
 
 python3 ../gentype.py header > ../gentype_gen.h
 python3 ../gentype.py debug  > ../gentype_gen.c

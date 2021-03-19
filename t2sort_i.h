@@ -33,6 +33,12 @@ typedef union t2sort_pay_struct {
                 bpi;  //Block-Pile-Information
 } t2_pay_t;
 
+typedef struct t2sort_blk_struct {
+    void      * page;
+//  int         head;
+//  int         tail;
+} t2_blk_t;
+
 typedef struct t2sort_que_struct t2_que_t;
 struct t2sort_que_struct {
     t2_que_t  * next;
@@ -43,6 +49,7 @@ struct t2sort_que_struct {
     t2_aio_t    aio;
     int         flag;
     int         id;
+    int64_t     ma, Ma, mz, Mz;
 };
 #define T2_QUE_SUBMIT  (1<<0)
 #define T2_QUE_ALLOC   (1<<1)
@@ -64,6 +71,7 @@ typedef struct t2sort_struct {
     int64_t     pntr;       //ntr per pile
     t2_que_t    read;       //IO pool queue, TODO: rename
     t2_que_t    wait;       //IO wait queue
+    t2_que_t    DONe;       //finished queue
     int64_t     head;       //IO head index
     int64_t     tail;       //IO tail index
     int64_t     done;       //IO done index
@@ -76,7 +84,9 @@ typedef struct t2sort_struct {
     void      *_base;
     t2_que_t  *_xque;
     void      *_pkey;
-    //int       *_pmap;
+    t2_blk_t  *_rblk;
+    int64_t     addr;
+    int64_t    _wrap;
 } t2sort_t;
 
 int dbg_gen_key(int kmin, int kmax);

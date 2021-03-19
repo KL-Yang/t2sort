@@ -1,34 +1,70 @@
 #ifndef C_T2SORT_READ_T2SORT
 #define C_T2SORT_READ_T2SORT
 
-static int t2_wait_rblock(t2_que_t *stub, int bntr)
+static int 
+t2_wait_rblock(t2sort_t *h, t2_que_t *wait, int bntr, t2_que_t *DONe)
 {
     int ntr=0;
-    while(stub->next!=stub && ntr<bntr) {
-        t2_que_t *xque=xque_deque(stub);
+    while(wait->next!=wait && ntr<bntr) {
+        t2_que_t *xque=xque_deque(wait);
+        printf("%s: id=%3d ntr=%4d total=%d\n", __func__,
+                xque->id, xque->ntr, ntr);
         t2_aio_wait(&xque->aio, 1);
+        if(xque->ma!=xque->Ma)
+            memcpy(h->_base+xque->ma%h->_wrap,
+                    h->_rblk[xque->blk].page, xque->Ma-xque->ma);
+        if(xque->Mz!=xque->mz)
+            memcpy(h->_rblk[xque->blk].page, 
+                h->_base+xque->mz%h->_wrap, xque->Mz-xque->mz);
+
+        h->func_cpy_key(h->_base+xque->ma%h->_wrap, h->trln, 
+                xque->ntr, h->kdef, h->_pkey+ntr*h->klen);
         ntr += xque->ntr;
-        if(xque->flag & T2_QUE_ALLOC)
-            free(xque);
+        xque_enque(DONe, xque);
     };
     return ntr;
 }
+
 void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->done += h->nfly;
-    try_issue_read(h, &h->read);
+    h->DONe.next->ma  += h->nfly*h->trln;
+    h->DONe.next->ntr -= h->nfly;
 
-    if(h->done==h->tail) {    //data exhausted
-        int nsort = t2_wait_rblock(&h->wait, h->bntr);
-        t2_list_keys(h, nsort);
+    if(h->DONe.next->ntr==0 && h->DONe.next!=&h->DONe)
+        xque_deque(&h->DONe);
+    //make sure submit not overrun on buffers
+    if(h->DONe.next==&h->DONe) {
+        //data exhausted, sort a block!
+        assert(h->done==h->tail);
+        int nsort = t2_wait_rblock(h, &h->wait, h->bntr, &h->DONe);
         t2_sort_block(h, h->_pkey, nsort);
         h->tail+=nsort;
+        printf("%s: sort a block\n", __func__);
+        t2_que_t *x=h->DONe.next;
+        while(x!=&h->DONe) {
+            printf("  DONE id=%3d ntr=%d\n", x->id, x->ntr);
+            dbg_keys_valid(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
+                    h->kdef[0].offset, h->kdef[1].offset);
+            //dbg_keys_print(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
+            //        h->kdef[0].offset, h->kdef[1].offset);
+            dbg_data_valid(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
+                    h->kdef[0].offset, h->kdef[1].offset);
+            fflush(0);
+            x = x->next;
+        }
     }
-
-    *ntr = MIN(*ntr, h->tail-h->done);
-    *ntr = ring_wrap(h->done, (*ntr), h->wrap);
-    void *praw = h->_base+(h->done%h->wrap)*h->trln;
-    h->nfly = *ntr;
+    //Check if DONe queue left room, submit new read!
+    t2_read_submit(h, &h->read);
+    //no need to check wrap anymore, already handled!!!
+    //from h->DONe get an item
+    //assert(h->DONe.next->ntr!=0);   //has something to handout!
+    *ntr = MIN((*ntr), h->DONe.next->ntr);
+    h->nfly = (*ntr);
+    printf("%s: return id=%3d ntr=%4ld left=%4d\n", __func__, 
+            h->DONe.next->id, h->nfly, h->DONe.next->ntr);
+    fflush(0);
+    void *praw = h->_base+(h->DONe.next->ma)%h->_wrap;
     return praw;
 }
 
