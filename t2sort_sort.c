@@ -38,6 +38,10 @@ int t2sort_sort(t2sort_h h)
     h->_wrap = (h->bntr+h->pntr)*h->trln;
     h->_xque = t2_list_rque2(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr, h->trln);
+    //int *nn = calloc(h->nblk*h->nblk, sizeof(int));
+    //t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, nn);
+    //t2_rque(&h->read, nn, 
+    //free(nn);
     //debug
     int xsum=0; 
     t2_que_t *xhead = h->read.next;
