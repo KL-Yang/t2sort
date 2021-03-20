@@ -21,14 +21,6 @@ static int t2_rcap(int64_t *xb, int ftr, int trln, int64_t wrap)
     } assert(ncap>0);
     return ncap;
 }
-/*
-static int64_t
-t2_addr(int64_t xbase, int64_t xwrap, int first, int *ninst, 
-        int trlen)
-{
-    int ncap = xwrap-xbase%xwrap-first*trlen%PAGE_SIZE;
-    return ncap;
-} */
 
 static void //count the block-block contribution
 t2_scan(const void *pkey, int nkey, int klen, int bntr,
@@ -45,7 +37,7 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
 static int
 t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln, 
     int pntr, int xwrap) 
-{   //give it _base as temp buff buffer as 
+{
     int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
     for(int j=0, ext0=0, ext1=0; j<nblk; j++, n+=nblk)
@@ -68,7 +60,7 @@ t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln,
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
                 x++;
-            } printf("%s: total read queue=%d\n", __func__, x);
+            } 
     return x;
 }
 
@@ -119,8 +111,6 @@ static void t2_read_submit(t2sort_t *h, t2_que_t *r)
     while(r->next!=r && //read queue not finished
         h->DONe.next->ma+h->_wrap>=r->next->Mz) {
         x = xque_deque(r);
-        printf("%s: id=%3d ntr=%d\n", __func__, x->id, x->ntr);
-        fflush(0);
         offa = t2_align_ge(x->seek*h->trln);
         offz = t2_align_ge((x->seek+x->ntr)*h->trln);
         assert(offz-offa==x->Mz-x->Ma);

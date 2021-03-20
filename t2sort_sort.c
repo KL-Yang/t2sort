@@ -25,8 +25,12 @@ int t2sort_sort(t2sort_h h)
 
     //3. read and sort all keys
     void *key = malloc(h->nkey*h->klen);
+    int *bbnn = calloc(h->nblk*h->nblk, sizeof(int));
     pread(h->fd_keys, key, h->nkey*h->klen, 0);
     qsort(key, h->nkey, h->klen, h->func_cmp_key);
+    t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, bbnn);
+    free(key);
+
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
@@ -37,13 +41,9 @@ int t2sort_sort(t2sort_h h)
         h->_rblk[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
     h->_wrap = (h->bntr+h->pntr)*h->trln;
 
-    int *nn = calloc(h->nblk*h->nblk, sizeof(int));
-    t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, nn);
-    free(key);
-    int nque = t2_lque(h->_base, nn, h->nblk, h->bntr, 
+    int nque = t2_lque(h->_base, bbnn, h->nblk, h->bntr, 
             h->trln, h->pntr, h->_wrap);
-    free(nn);
-    h->read.prev = h->read.next = &h->read;
+    free(bbnn);
     h->_xque = t2_rque(&h->read, h->_base, nque); 
 
     //debug
@@ -54,7 +54,6 @@ int t2sort_sort(t2sort_h h)
         xhead = xhead->next;
     }
     printf("%s:total rque ntr=%d\n", __func__, xsum);
-
     t2_print_queu(&h->read, h->trln, h->wrap);
     //fflush(0); abort();
 

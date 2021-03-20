@@ -30,23 +30,9 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
     if(h->DONe.next->ntr==0 && h->DONe.next!=&h->DONe)
         xque_deque(&h->DONe);
     //make sure submit not overrun on buffers
-    if(h->DONe.next==&h->DONe) {
-        //data exhausted, sort a block!
+    if(h->DONe.next==&h->DONe) { //data exhausted, sort a block!
         int nsort = t2_wait_rblock(h, &h->wait, h->bntr, &h->DONe);
         t2_sort_block(h, h->_pkey, nsort);
-/*        printf("%s: sort a block\n", __func__);
-        t2_que_t *x=h->DONe.next;
-        while(x!=&h->DONe) {
-            printf("  DONE id=%3d ntr=%d\n", x->id, x->ntr);
-            dbg_keys_valid(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
-                    h->kdef[0].offset, h->kdef[1].offset);
-            //dbg_keys_print(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
-            //        h->kdef[0].offset, h->kdef[1].offset);
-            dbg_data_valid(h->_base+x->ma%h->_wrap, x->ntr, h->trln, 
-                    h->kdef[0].offset, h->kdef[1].offset);
-            fflush(0);
-            x = x->next;
-        } */
     }
     //Check if DONe queue left room, submit new read!
     t2_read_submit(h, &h->read);
