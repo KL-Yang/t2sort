@@ -35,8 +35,6 @@ typedef union t2sort_pay_struct {
 
 typedef struct t2sort_blk_struct {
     void      * page;
-//  int         head;
-//  int         tail;
 } t2_blk_t;
 
 typedef struct t2sort_que_struct t2_que_t;
@@ -47,7 +45,6 @@ struct t2sort_que_struct {
     int         blk;    //read from which disk block
     off_t       seek;   //trace index of seeking
     t2_aio_t    aio;
-    int         flag;
     int         id;
     int64_t     ma, Ma, mz, Mz;
 };
