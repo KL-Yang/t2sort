@@ -84,67 +84,6 @@ t2_rque(t2_que_t *pool, t2_que_t *list, int nque)
     return xque;
 }
 
-static t2_que_t *
-t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen, 
-        int bntr, int nblk, int pntr, int tlen)
-{
-    t2_que_t *xque; 
-    int f[nblk], n[nblk], x=0, ncap, nque; 
-    //int64_t xbase=PAGE_SIZE, xwrap=(bntr+pntr)*tlen;
-    int64_t xbase=0, xwrap=(bntr+pntr)*tlen;
-    nque = MAX(nblk*(bntr/pntr+1)+nblk, 2*nblk*nblk+nblk);
-    xque = calloc(nque, sizeof(t2_que_t));
-    memset(f, 0, nblk*sizeof(int));
-    for(int k=0, xntr, ext0=0, ext1=0; k<nkey; k+=bntr) {
-        xntr = MIN(bntr, nkey-k);
-        memset(n, 0, nblk*sizeof(int));
-        for(int j=0; j<xntr; j++, pkey+=klen)
-            n[((t2_pay_t*)pkey)->bpi.blk]++;
-        for(int i=0; i<nblk; i++) {
-            while(n[i]!=0) {
-                //each block head @ f[i]
-                xque[x].blk  = i;
-                xque[x].seek = i*bntr+f[i];
-                xque[x].id   = x;
-                //memory range for read!
-                ext0 = t2_ext0(f[i]*tlen);
-                ncap = t2_rcap(&xbase, f[i], tlen, xwrap);
-                xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
-                xque[x].Ma  = xbase; //one page gap
-                if(ext1+ext0>PAGE_SIZE || ((xbase%xwrap==0)&&ext0>0))
-                    xque[x].Ma += PAGE_SIZE;
-                xque[x].ma  = xque[x].Ma-ext0;
-                if(x>0) {
-                    if(xque[x].ma/xwrap==xque[x-1].mz/xwrap) {
-                        if(xque[x].ma-xque[x-1].mz>PAGE_SIZE)
-                            abort();
-                        if(xque[x].ma<xque[x-1].mz)
-                            abort();
-                    }
-                }
-                xque[x].mz  = xque[x].ma+xque[x].ntr*tlen;
-                ext1 = t2_ext1(xque[x].mz);
-                xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
-
-                //NOTE: here ext1 maps to 1->PAGE_SIZE;
-                //ext0 maps to 0->PAGE_SIZE-1
-
-                assert(xque[x].Mz>=xque[x].mz);
-                assert((xque[x].Mz-1)/xwrap==xque[x].mz/xwrap);
-                t2_que_t *item=&xque[x];
-                assert((item->ma-1)/xwrap==(item->Mz-1)/xwrap);
-                xbase = xque[x].Mz;
-                f[i] += xque[x].ntr;
-                n[i] -= xque[x].ntr;
-                xque_enque(head, &xque[x]);
-                x++;
-            }
-        }
-    } assert(x<=nque);
-    printf("%s: total read queue=%d\n", __func__, x);
-    return realloc(xque, x*sizeof(t2_que_t));
-}
-
 static void t2_print_queu(t2_que_t *stub, int trln, int wrap)
 {
     t2_que_t *item=stub->next;

@@ -36,11 +36,7 @@ int t2sort_sort(t2sort_h h)
     for(int i=0; i<h->nblk; i++) 
         h->_rblk[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
     h->_wrap = (h->bntr+h->pntr)*h->trln;
-//#define USE_OLD
-#ifdef USE_OLD
-    h->_xque = t2_list_rque2(&h->read, key, h->nkey, h->klen, 
-            h->bntr, h->nblk, h->pntr, h->trln);
-#else    
+
     int *nn = calloc(h->nblk*h->nblk, sizeof(int));
     t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, nn);
     free(key);
@@ -49,8 +45,7 @@ int t2sort_sort(t2sort_h h)
     free(nn);
     h->read.prev = h->read.next = &h->read;
     h->_xque = t2_rque(&h->read, h->_base, nque); 
-#endif
-    //fflush(0); abort();
+
     //debug
     int xsum=0; 
     t2_que_t *xhead = h->read.next;
