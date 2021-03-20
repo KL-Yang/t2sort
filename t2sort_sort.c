@@ -13,11 +13,11 @@ int t2sort_sort(t2sort_h h)
         xque = xque_deque(&h->wait);
     };
     free(h->_xque);
-    if(h->flag & T2SORT_DIO) {
+    /* if(h->flag & T2SORT_DIO) {
         close(h->fd);   //reopen without O_DIRECT for now!
         h->fd = open(h->fd_name, O_RDWR|O_CREAT,
                 S_IRWXU|S_IRWXG|S_IRWXO);
-    }
+    } */
     h->nkey = h->head;
 
     //dbg_blocks_check(h);

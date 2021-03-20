@@ -84,7 +84,7 @@ static void t2_print_queu(t2_que_t *stub, int trln, int wrap)
         printf("%4d BLK[%2d] NTR=%5d [%16ld,%16ld] [%16ld,%16ld] seek=%8ld\n",
             item->id, item->blk, item->ntr, item->Ma, item->Mz,
             item->ma, item->mz, item->seek);
-        assert((item->ma-1)/xwrap==(item->Mz-1)/xwrap);
+        assert(item->ma/xwrap==(item->Mz-1)/xwrap);
         assert(item->Ma%PAGE_SIZE==0);
         assert(item->Mz%PAGE_SIZE==0);
         assert(item->Ma>=item->ma);
@@ -116,6 +116,9 @@ static void t2_read_submit(t2sort_t *h, t2_que_t *r)
         assert(offz-offa==x->Mz-x->Ma);
         t2_aio_read(&x->aio, h->fd, h->_base+(x->Ma)%h->_wrap, 
                 offz-offa, offa);
+        assert(offa%PAGE_SIZE==0);
+        assert(offz%PAGE_SIZE==0);
+        assert(x->Ma%PAGE_SIZE==0);
         xque_enque(&h->wait, x);
     }
 }
