@@ -13,11 +13,6 @@ int t2sort_sort(t2sort_h h)
         xque = xque_deque(&h->wait);
     };
     free(h->_xque);
-    /* if(h->flag & T2SORT_DIO) {
-        close(h->fd);   //reopen without O_DIRECT for now!
-        h->fd = open(h->fd_name, O_RDWR|O_CREAT,
-                S_IRWXU|S_IRWXG|S_IRWXO);
-    } */
     h->nkey = h->head;
 
     //dbg_blocks_check(h);
@@ -46,20 +41,9 @@ int t2sort_sort(t2sort_h h)
     free(bbnn);
     h->_xque = t2_rque(&h->read, h->_base, nque); 
 
-    //debug
-    int xsum=0; 
-    t2_que_t *xhead = h->read.next;
-    while(xhead!=&h->read) {
-        xsum += xhead->ntr;
-        xhead = xhead->next;
-    }
-    printf("%s:total rque ntr=%d\n", __func__, xsum);
-    t2_print_queu(&h->read, h->trln, h->wrap);
-    //fflush(0); abort();
+    dbg_rque_print(&h->read, h->trln, h->_wrap);
 
-    //Initiate for t2sort_read()
-    h->head = h->tail = h->done = h->nfly = 0;
-    //try_issue_read(h, &h->read);
+    h->nfly = 0;
     t2_read_submit(h, &h->read);
 
     return 0;

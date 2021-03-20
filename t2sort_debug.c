@@ -49,6 +49,39 @@ void dbg_keys_valid(void *p, int n, int len, int gofs, int sofs)
         abort();
 }
 
+static void dbg_rque_print(t2_que_t *stub, int trln, int xwrap)
+{
+    int xsum=0; t2_que_t *xhead=stub->next;
+    while(xhead!=stub) {
+        xsum += xhead->ntr;
+        xhead = xhead->next;
+    }
+    printf("%s:total rque ntr=%d\n", __func__, xsum);
+    t2_que_t *item=stub->next;
+    while(item!=stub) {
+        printf("%4d BLK[%2d] NTR=%5d [%16ld,%16ld] [%16ld,%16ld] seek=%8ld\n",
+            item->id, item->blk, item->ntr, item->Ma, item->Mz,
+            item->ma, item->mz, item->seek);
+        assert(item->ma/xwrap==(item->Mz-1)/xwrap);
+        assert(item->Ma%PAGE_SIZE==0);
+        assert(item->Mz%PAGE_SIZE==0);
+        assert(item->Ma>=item->ma);
+        assert(item->Mz>=item->mz);
+        assert(item->mz-item->ma==item->ntr*trln);
+        if(item->next!=stub) {
+            assert(item->mz<=item->next->ma);
+            assert(item->Mz<=item->next->Ma);
+            if(item->next->ma-item->mz >=PAGE_SIZE && 
+                (item->next->ma/xwrap == item->mz/xwrap)) {
+                printf("%s: waste a page!\n", __func__);
+            }
+        }
+        item=item->next;
+    }
+}
+
+
+
 void dbg_keys_print(void *p, int n, int len, int gofs, int sofs)
 {
     assert(gofs%4==0 && sofs%4==0 && len%4==0);
