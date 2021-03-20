@@ -40,64 +40,49 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
         for(int j=0; j<xntr; j++, pkey+=klen)
             nn[((t2_pay_t*)pkey)->bpi.blk]++;
     }
-} /*
-static void //create a memory list
-t2_list(int *nn, int nblk, int tlen)
-{
-    int nque=0, f[nblk]; memset(f, 0, nblk*sizeof(float));
-    for(int k=0; k<nblk; k++, nn+=nblk) 
-        for(int i=0; i<nblk; i++) {
-            ext0 = t2_ext0(f[i]*tlen);
-            ncap = t2_rcap(&xbase, f[i], tlen, xwrap);
-        }
-} */
-/*
-static t2_que_t *
-t2_rque(t2_que_t *head, int *n, int nblk, int trln, int wrap) 
-{
-    t2_que_t *xque; 
-    int f[nblk], x=0, ncap, nque; 
-    int64_t xbase=PAGE_SIZE;
-    nque = MAX(nblk*(bntr/pntr+1)+nblk, 2*nblk*nblk+nblk);
-    xque = calloc(nque, sizeof(t2_que_t));
+}
+
+static int
+t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln, 
+    int pntr, int xwrap) 
+{   //give it _base as temp buff buffer as 
+    int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
-    for(int k=0; k<nblk; k++, n+=nblk) {
-        for(int i=0; i<nblk; i++) {
+    for(int j=0, ext0=0, ext1=0; j<nblk; j++, n+=nblk)
+        for(int i=0, ncap=0; i<nblk; i++)
             while(n[i]!=0) {
-                //each block head @ f[i]
+                memset(&xque[x], 0, sizeof(t2_que_t));
                 xque[x].blk  = i;
                 xque[x].seek = i*bntr+f[i];
-                xque[x].id   = x;
-                //memory range for read!
-                ext0 = t2_ext0(f[i]*tlen);
-                ncap = t2_rcap(&xbase, ext0, tlen, wrap);
+                ext0 = t2_ext0(f[i]*trln);
+                ncap = t2_rcap(&xbase, f[i], trln, xwrap);
                 xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
                 xque[x].Ma  = xbase; //one page gap
+                if(ext1+ext0>PAGE_SIZE || ((xbase%xwrap==0)&&ext0>0))
+                    xque[x].Ma += PAGE_SIZE;
                 xque[x].ma  = xque[x].Ma-ext0;
-                xque[x].mz  = xque[x].ma+xque[x].ntr*tlen;
-                xque[x].Mz  = xque[x].mz;
-                if((ext1=xque[x].mz%PAGE_SIZE)!=0)
-                    xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
-
-                assert(xque[x].Mz>=xque[x].mz);
-                assert((xque[x].Mz-1)/wrap==xque[x].mz/wrap);
-                t2_que_t *item=&xque[x];
-                assert((item->ma-1)/wrap==(item->Mz-1)/wrap);
-                if((xbase=xque[x].Mz+PAGE_SIZE)%wrap==0)
-                    xbase+=PAGE_SIZE;   //start new wrap
-                assert(xbase%wrap!=0);
+                xque[x].mz  = xque[x].ma+xque[x].ntr*trln;
+                ext1 = t2_ext1(xque[x].mz);
+                xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
+                xbase = xque[x].Mz;
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
-                xque_enque(head, &xque[x]);
                 x++;
-            }
-        }
-    } assert(x<=nque);
-    printf("%s: total read queue=%d\n", __func__, x);
-    return realloc(xque, x*sizeof(t2_que_t));
-    //TODO: realloc is very dangerous here as it uses
-    //pointer for the double linked list!!!
-} */
+            } printf("%s: total read queue=%d\n", __func__, x);
+    return x;
+}
+
+static t2_que_t *
+t2_rque(t2_que_t *pool, t2_que_t *list, int nque) 
+{
+    t2_que_t *xque = calloc(nque, sizeof(t2_que_t));
+    memcpy(xque, list, nque*sizeof(t2_que_t));
+    for(int i=0; i<nque; i++) {
+        xque[i].id = i;
+        xque_enque(pool, &xque[i]);
+    }
+    return xque;
+}
 
 static t2_que_t *
 t2_list_rque2(t2_que_t *head, void *pkey, int nkey, int klen, 
@@ -165,9 +150,9 @@ static void t2_print_queu(t2_que_t *stub, int trln, int wrap)
     t2_que_t *item=stub->next;
     int xwrap = wrap*trln;
     while(item!=stub) {
-        printf("%4d BLK[%2d] NTR=%5d [%16ld,%16ld] [%16ld,%16ld]\n",
+        printf("%4d BLK[%2d] NTR=%5d [%16ld,%16ld] [%16ld,%16ld] seek=%8ld\n",
             item->id, item->blk, item->ntr, item->Ma, item->Mz,
-            item->ma, item->mz);
+            item->ma, item->mz, item->seek);
         assert((item->ma-1)/xwrap==(item->Mz-1)/xwrap);
         assert(item->Ma%PAGE_SIZE==0);
         assert(item->Mz%PAGE_SIZE==0);

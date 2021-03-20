@@ -36,12 +36,22 @@ int t2sort_sort(t2sort_h h)
     for(int i=0; i<h->nblk; i++) 
         h->_rblk[i].page = aligned_alloc(PAGE_SIZE, PAGE_SIZE);
     h->_wrap = (h->bntr+h->pntr)*h->trln;
+//#define USE_OLD
+#ifdef USE_OLD
+    memset(h->_base, 0, h->_wrap);
     h->_xque = t2_list_rque2(&h->read, key, h->nkey, h->klen, 
             h->bntr, h->nblk, h->pntr, h->trln);
-    //int *nn = calloc(h->nblk*h->nblk, sizeof(int));
-    //t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, nn);
-    //t2_rque(&h->read, nn, 
-    //free(nn);
+#else    
+    int *nn = calloc(h->nblk*h->nblk, sizeof(int));
+    t2_scan(key, h->nkey, h->klen, h->bntr, h->nblk, nn);
+    free(key);
+    int nque = t2_lque(h->_base, nn, h->nblk, h->bntr, 
+            h->trln, h->pntr, h->_wrap);
+    free(nn);
+    h->read.prev = h->read.next = &h->read;
+    h->_xque = t2_rque(&h->read, h->_base, nque); 
+#endif
+    //fflush(0); abort();
     //debug
     int xsum=0; 
     t2_que_t *xhead = h->read.next;
@@ -50,10 +60,9 @@ int t2sort_sort(t2sort_h h)
         xhead = xhead->next;
     }
     printf("%s:total rque ntr=%d\n", __func__, xsum);
-    free(key);
 
     t2_print_queu(&h->read, h->trln, h->wrap);
-    //abort();
+    //fflush(0); abort();
 
     //Initiate for t2sort_read()
     h->head = h->tail = h->done = h->nfly = 0;
