@@ -9,15 +9,15 @@ type3_str = "typedef struct {{ t2_pay_t pay; {t1}  key1; {t2} key2; {t3} key3; }
 
 type1_cmp = """
 static int cmp_{t1}(const void *p1, const void *p2) {{
-    const t2sort_{t1}_t *k1=p1;
-    const t2sort_{t1}_t *k2=p2;
+    const t2sort_{t1}_t * restrict k1=p1;
+    const t2sort_{t1}_t * restrict k2=p2;
     return (k1->key1-k2->key1);
 }}
 """
 type2_cmp = """
 static int cmp_{t1}_{t2}(const void *p1, const void *p2) {{
-    const t2sort_{t1}_{t2}_t *k1=p1;
-    const t2sort_{t1}_{t2}_t *k2=p2;
+    const t2sort_{t1}_{t2}_t * restrict k1=p1;
+    const t2sort_{t1}_{t2}_t * restrict k2=p2;
     if(k1->key1==k2->key1)
         return (k1->key2-k2->key2);
     return (k1->key1-k2->key1);
@@ -25,8 +25,8 @@ static int cmp_{t1}_{t2}(const void *p1, const void *p2) {{
 """
 type3_cmp = """
 static int cmp_{t1}_{t2}_{t3}(const void *p1, const void *p2) {{
-    const t2sort_{t1}_{t2}_{t3}_t *k1=p1;
-    const t2sort_{t1}_{t2}_{t3}_t *k2=p2;
+    const t2sort_{t1}_{t2}_{t3}_t * restrict k1=p1;
+    const t2sort_{t1}_{t2}_{t3}_t * restrict k2=p2;
     if(k1->key1==k2->key1) {{
         if(k1->key2==k2->key2) 
             return k1->key3-k2->key3;
@@ -36,29 +36,32 @@ static int cmp_{t1}_{t2}_{t3}(const void *p1, const void *p2) {{
 }}
 """
 type1_cpy = """
-static void cpy_{t1}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
+#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
-        {t1} * k1 = ({t1} *)(p+kd[0].offset);
-        t2sort_{t1}_t *k = pk;
+        {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
+        t2sort_{t1}_t * restrict k = pk;
         k[i].key1 = *k1; k[i].pay.ptr = p;
     }} }}
 """
 type2_cpy = """
-static void cpy_{t1}_{t2}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}_{t2}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
+#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
-        {t1} * k1 = ({t1} *)(p+kd[0].offset);
-        {t2} * k2 = ({t2} *)(p+kd[1].offset);
-        t2sort_{t1}_{t2}_t *k = pk;
+        {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
+        {t2} * restrict k2 = ({t2} *)(p+kd[1].offset);
+        t2sort_{t1}_{t2}_t * restrict k = pk;
         k[i].key1 = *k1; k[i].key2 = *k2; k[i].pay.ptr = p;
     }} }}
 """
 type3_cpy = """
-static void cpy_{t1}_{t2}_{t3}(void *p, int l, int n, const t2sort_key_def_t *kd, void *pk) {{
+static void cpy_{t1}_{t2}_{t3}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
+#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
-        {t1} * k1 = ({t1} *)(p+kd[0].offset);
-        {t2} * k2 = ({t2} *)(p+kd[1].offset);
-        {t3} * k3 = ({t3} *)(p+kd[2].offset);
-        t2sort_{t1}_{t2}_{t3}_t *k = pk;
+        {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
+        {t2} * restrict k2 = ({t2} *)(p+kd[1].offset);
+        {t3} * restrict k3 = ({t3} *)(p+kd[2].offset);
+        t2sort_{t1}_{t2}_{t3}_t * restrict k = pk;
         k[i].key1 = *k1; k[i].key2 = *k2; k[i].key3 = *k3; k[i].pay.ptr = p;
     }} }}
 """
