@@ -67,11 +67,11 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
     *ntr = ring_wrap(h->head, (*ntr), h->wrap);
     *ntr = MIN((*ntr), h->tail+h->bntr-h->head);
     //have to wait for completion
-    while(h->done+h->wrap<h->head+(*ntr)) {
+    while(h->disk+h->wrap<h->head+(*ntr)) {
         t2_que_t *xque = xque_deque(&h->wait);
         assert(xque!=&h->wait && xque->ntr);
         t2_aio_wait(&xque->aio, 1);
-        h->done+=xque->ntr;
+        h->disk+=xque->ntr;
         xque_enque(&h->read, xque);
     }
     void *praw = h->_base+(h->head%h->wrap)*h->trln;

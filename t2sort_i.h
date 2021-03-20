@@ -69,11 +69,11 @@ typedef struct t2sort_struct {
     t2_que_t    read;       //IO pool queue, TODO: rename
     t2_que_t    wait;       //IO wait queue
     t2_que_t    DONe;       //finished queue
-    int64_t     head;       //IO head index
-    int64_t     tail;       //IO tail index
-    int64_t     done;       //IO done index
-    int64_t     nfly;       //IO flying
-    int64_t     wrap;       //ring buffer size pntr*(wioq+1)
+    uint32_t    head;       //IO head index
+    uint32_t    tail;       //IO tail index
+    uint32_t    disk;       //IO on disk index
+    uint32_t    nfly;       //IO flying
+    uint32_t    wrap;       //ring buffer size pntr*(wioq+1)
 //////////////////////////////////////////////
     int  (*func_cmp_key)(const void*,const void*);
     void (*func_cpy_key)(void*,int,int,const t2_kdef_t*,void*);

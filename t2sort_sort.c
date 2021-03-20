@@ -9,7 +9,7 @@ int t2sort_sort(t2sort_h h)
     t2_que_t *xque = xque_deque(&h->wait);
     while(xque!=&h->wait) {
         t2_aio_wait(&xque->aio, 1);
-        h->done+=xque->ntr;
+        h->disk+=xque->ntr;
         xque = xque_deque(&h->wait);
     };
     free(h->_xque);

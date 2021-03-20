@@ -4,7 +4,7 @@ typedef struct {
     int64_t ipos;   //current without wrap
     int64_t zpos;   //capability without wrap
     int64_t wrap;
-    int trlen, spill;
+    int trlen;
 } t2_ring_t;
 
 static t2_ring_t *ring_init(int trln, int wrap_ntr)
