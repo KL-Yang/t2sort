@@ -29,7 +29,7 @@ int t2sort_sort(t2sort_h h)
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;
     h->read.prev = h->read.next = &h->read;
-    h->DONe.prev = h->DONe.next = &h->DONe;
+    h->done.prev = h->done.next = &h->done;
 
     h->_rblk = calloc(h->nblk, sizeof(t2_blk_t));
     for(int i=0; i<h->nblk; i++) 

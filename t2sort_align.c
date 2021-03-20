@@ -103,7 +103,7 @@ static void t2_read_submit(t2sort_t *h, t2_que_t *r)
 {
     int64_t offa, offz; t2_que_t *x;
     while(r->next!=r && //read queue not finished
-        h->DONe.next->ma+h->_wrap>=r->next->Mz) {
+        h->done.next->ma+h->_wrap>=r->next->Mz) {
         x = xque_deque(r);
         offa = t2_align_ge(x->seek*h->trln);
         offz = t2_align_ge((x->seek+x->ntr)*h->trln);

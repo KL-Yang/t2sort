@@ -68,7 +68,7 @@ typedef struct t2sort_struct {
     int64_t     pntr;       //ntr per pile
     t2_que_t    read;       //IO pool queue, TODO: rename
     t2_que_t    wait;       //IO wait queue
-    t2_que_t    DONe;       //finished queue
+    t2_que_t    done;       //finished queue
     uint32_t    head;       //IO head index
     uint32_t    tail;       //IO tail index
     uint32_t    disk;       //IO on disk index
