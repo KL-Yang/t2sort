@@ -8,7 +8,8 @@ int t2sort_close(t2sort_h h)
     free(t->kdef);
     free(t->_base);
     free(t->_xque);
-    free(t->_pkey);
+    free(t->_pkey); free(t->_temp); 
+    free(h->_imap); free(h->_pptr);
     for(int i=0; i<t->nblk; i++)
         free(h->_rblk[i].page);
     free(t->_rblk);

@@ -19,21 +19,16 @@ static void t2_list_keys(t2sort_t *h, int nsort)
 
 static void t2_sort_block(t2sort_t *h, void *pkey, int nkey) 
 {
-    void **ptr, *tmp; int *map; //TODO: pre-allocate in init
-    tmp = malloc(h->trln);
-    map = malloc(nkey*sizeof(int));
-    ptr = malloc(nkey*sizeof(void*));
-    for(int64_t i=0; i<nkey; i++) {
-        ptr[i] = ((t2_pay_t*)(pkey+i*h->klen))->ptr;
-        ((t2_pay_t*)(pkey+i*h->klen))->idx = i;
+    void *xkey=pkey;
+    for(int64_t i=0; i<nkey; i++, xkey+=h->klen) {
+        h->_pptr[i] = ((t2_pay_t*)xkey)->ptr;
+        ((t2_pay_t*)xkey)->idx = i;
     }
     qsort(pkey, nkey, h->klen, h->func_cmp_key);
-    for(int64_t i=0; i<nkey; i++)
-        map[i] = ((t2_pay_t*)(pkey+i*h->klen))->idx;
-    t2sort_map_sort(ptr, nkey, map, h->trln, tmp);
-    free(tmp);
-    free(map);
-    free(ptr);
+    xkey=pkey;
+    for(int64_t i=0; i<nkey; i++, xkey+=h->klen)
+        h->_imap[i] = ((t2_pay_t*)xkey)->idx;
+    t2sort_map_sort(h->_pptr, nkey, h->_imap, h->trln, h->_temp);
 }
 
 static void t2_flush_block(t2sort_t *h, int nsort)

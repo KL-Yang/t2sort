@@ -27,7 +27,6 @@ static int t2_multiple(int pagemask, int trln)
         multiple*=f[i];
     return multiple;
 }
-
 static void xque_enque(t2_que_t *stub, t2_que_t *x)
 {
     t2_que_t *tail = stub->prev;
@@ -37,21 +36,17 @@ static void xque_enque(t2_que_t *stub, t2_que_t *x)
 static t2_que_t *xque_deque(t2_que_t *stub)
 {
     t2_que_t *head = stub->next;
-    stub->next = head->next;    //note head may be stub!
+    stub->next = head->next;
     head->next->prev = stub;
     return head;
 }
-
 static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 {
-    int scale, xsize;
-    xsize=t2_multiple(PAGE_MASK, trln);
-    scale=nearbyint(bsiz*1024.0*1024.0/xsize/(1+wioq));
-    scale=MAX(1, scale);
+    int xsize=t2_multiple(PAGE_MASK, trln);
+    int scale=MAX(1, nearbyint(bsiz*1024.0*1024.0/xsize/(1+wioq)));
     h->pntr = scale*(xsize/trln);
     h->bntr = h->pntr*wioq;
 }
-
 static void t2_init_scratch(t2sort_t *h, int flag)
 {
     strcpy(h->fd_name, "delete_d_XXXXXX");
@@ -90,8 +85,8 @@ t2sort_open(int tlen, int ndef, const t2_kdef_t *kdef,
     memcpy(h->kdef, kdef, ndef*sizeof(t2_kdef_t));
 
     t2_init_blk(h, bsiz, wioq, tlen);
-    h->wrap = h->pntr*(wioq+1);
-    h->_base = aligned_alloc(PAGE_SIZE, h->wrap*tlen);
+    h->wrap  = h->pntr*(wioq+1);
+    h->_base = aligned_alloc(PAGE_SIZE, ((size_t)h->wrap)*tlen);
     printf("%s: bsiz=%dMB pntr=%ld wioq=%d buff=%8.1fMB\n", 
         __func__, bsiz, h->pntr, wioq, 
         nearbyint((h->wrap*tlen)/1024.0/1024.0));
@@ -99,17 +94,20 @@ t2sort_open(int tlen, int ndef, const t2_kdef_t *kdef,
     h->wioq  = wioq;
     h->flag  = flag;
     h->klen  = t2sort_key_size(ndef, kdef);
+    h->_xque = calloc((wioq+2), sizeof(t2_que_t));
+    h->_temp = malloc(h->trln);
+    h->_pkey = malloc(h->bntr*h->klen);
+    h->_imap = malloc(h->bntr*sizeof(int));
+    h->_pptr = malloc(h->bntr*sizeof(void*));
+
     t2_init_scratch(h, flag);
     h->func_cmp_key = t2sort_getcmp(ndef, kdef);
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
 
     h->wait.prev = h->wait.next = &h->wait;
     h->pool.prev = h->pool.next = &h->pool;
-
-    h->_xque = calloc((wioq+2), sizeof(t2_que_t));
     for(int i=0; i<(wioq+2); i++) 
         xque_enque(&h->pool, &h->_xque[i]);
-    h->_pkey = malloc(h->bntr*h->klen);
 
     return (t2sort_h)h;
 }

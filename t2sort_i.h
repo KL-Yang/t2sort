@@ -80,7 +80,8 @@ typedef struct t2sort_struct {
 //////////////////////////////////////////////
     void      *_base;
     t2_que_t  *_xque;
-    void      *_pkey;
+    int       *_imap;
+    void      *_pkey,*_temp,**_pptr;
     t2_blk_t  *_rblk;
     int64_t    _wrap;
 } t2sort_t;
