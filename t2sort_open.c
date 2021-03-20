@@ -104,11 +104,11 @@ t2sort_open(int tlen, int ndef, const t2_kdef_t *kdef,
     h->func_cpy_key = t2sort_getcpy(ndef, kdef);
 
     h->wait.prev = h->wait.next = &h->wait;
-    h->read.prev = h->read.next = &h->read;
+    h->pool.prev = h->pool.next = &h->pool;
 
     h->_xque = calloc((wioq+2), sizeof(t2_que_t));
     for(int i=0; i<(wioq+2); i++) 
-        xque_enque(&h->read, &h->_xque[i]);
+        xque_enque(&h->pool, &h->_xque[i]);
     h->_pkey = malloc(h->bntr*h->klen);
 
     return (t2sort_h)h;

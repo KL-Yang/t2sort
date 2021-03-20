@@ -35,7 +35,7 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
         t2_sort_block(h, h->_pkey, nsort);
     }
     //Check if done queue left room, submit new read!
-    t2_read_submit(h, &h->read);
+    t2_read_submit(h, &h->pool);
     *ntr = MIN((*ntr), h->done.next->ntr);
     h->nfly = (*ntr);
     return h->_base+(h->done.next->ma)%h->_wrap;

@@ -28,7 +28,7 @@ int t2sort_sort(t2sort_h h)
 
     //4. clear and rebuild read queue!
     h->wait.prev = h->wait.next = &h->wait;
-    h->read.prev = h->read.next = &h->read;
+    h->pool.prev = h->pool.next = &h->pool;
     h->done.prev = h->done.next = &h->done;
 
     h->_rblk = calloc(h->nblk, sizeof(t2_blk_t));
@@ -39,12 +39,12 @@ int t2sort_sort(t2sort_h h)
     int nque = t2_lque(h->_base, bbnn, h->nblk, h->bntr, 
             h->trln, h->pntr, h->_wrap);
     free(bbnn);
-    h->_xque = t2_rque(&h->read, h->_base, nque); 
+    h->_xque = t2_rque(&h->pool, h->_base, nque); 
 
-    dbg_rque_print(&h->read, h->trln, h->_wrap);
+    dbg_rque_print(&h->pool, h->trln, h->_wrap);
 
     h->nfly = 0;
-    t2_read_submit(h, &h->read);
+    t2_read_submit(h, &h->pool);
 
     return 0;
 }

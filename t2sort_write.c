@@ -47,8 +47,8 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     h->nblk++;
     write(h->fd_keys, h->_pkey, nsort*h->klen);
     for(int i=0; i<nsort; i+=h->pntr) {
-        t2_que_t *xque = xque_deque(&h->read); 
-        assert(xque!=&h->read); //que exhausted
+        t2_que_t *xque = xque_deque(&h->pool); 
+        assert(xque!=&h->pool); //que exhausted
         //xque->ntr = MIN(h->pntr, nsort-i);
         xque->ntr = h->pntr;    //last pile may have some garbage
         void *p = h->_base+(h->tail%h->wrap)*h->trln;
@@ -72,7 +72,7 @@ void * t2sort_writeraw(t2sort_h h, int *ntr)
         assert(xque!=&h->wait && xque->ntr);
         t2_aio_wait(&xque->aio, 1);
         h->disk+=xque->ntr;
-        xque_enque(&h->read, xque);
+        xque_enque(&h->pool, xque);
     }
     void *praw = h->_base+(h->head%h->wrap)*h->trln;
     h->nfly = *ntr;

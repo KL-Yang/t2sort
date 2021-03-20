@@ -66,7 +66,7 @@ typedef struct t2sort_struct {
     int64_t     nkey;       //Total ntr count
     int64_t     bntr;       //ntr per block
     int64_t     pntr;       //ntr per pile
-    t2_que_t    read;       //IO pool queue, TODO: rename
+    t2_que_t    pool;       //IO pool queue
     t2_que_t    wait;       //IO wait queue
     t2_que_t    done;       //finished queue
     uint32_t    head;       //IO head index
