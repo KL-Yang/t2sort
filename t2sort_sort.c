@@ -41,7 +41,7 @@ int t2sort_sort(t2sort_h h)
     free(bbnn);
     h->_xque = t2_rque(&h->pool, h->_base, nque); 
 
-    dbg_rque_print(&h->pool, h->trln, h->_wrap);
+    //dbg_rque_print(&h->pool, h->trln, h->_wrap);
 
     h->nfly = 0;
     t2_read_submit(h, &h->pool);

@@ -44,7 +44,7 @@ static void t2_flush_block(t2sort_t *h, int nsort)
     for(int i=0; i<nsort; i+=h->pntr) {
         t2_que_t *xque = xque_deque(&h->pool); 
         assert(xque!=&h->pool); //que exhausted
-        //xque->ntr = MIN(h->pntr, nsort-i);
+        //xque->ntr = MIN(h->pntr, nsort-i);    //align issue
         xque->ntr = h->pntr;    //last pile may have some garbage
         void *p = h->_base+(h->tail%h->wrap)*h->trln;
         t2_aio_write(&xque->aio, h->fd, p, xque->ntr*h->trln, 
@@ -56,6 +56,7 @@ static void t2_flush_block(t2sort_t *h, int nsort)
 
 void * t2sort_writeraw(t2sort_h h, int *ntr)
 {
+    //dbg_wait(h, __func__);
     if((h->head+=h->nfly)>=h->tail+h->bntr)
         t2_flush_block(h, h->bntr); 
     //ensure not cross block and ring boundary!

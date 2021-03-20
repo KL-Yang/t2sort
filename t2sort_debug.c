@@ -49,7 +49,7 @@ void dbg_keys_valid(void *p, int n, int len, int gofs, int sofs)
         abort();
 }
 
-static void dbg_rque_print(t2_que_t *stub, int trln, int xwrap)
+void dbg_rque_print(t2_que_t *stub, int trln, int xwrap)
 {
     int xsum=0; t2_que_t *xhead=stub->next;
     while(xhead!=stub) {
@@ -135,6 +135,18 @@ void dbg_blocks_check(t2sort_t *h)
     }
     free(buff);
     free(pkey);
+}
+
+void dbg_wait(t2sort_t *h, const char *msg)
+{
+    int ntr=0, nwt=0;
+    t2_que_t *head = h->wait.next;
+    while(head!=&h->wait) {
+        ntr += head->ntr;
+        head = head->next;
+        nwt++;
+    }
+    printf("%s: nwait=%4d tr-wait=%d\n", msg, nwt, ntr);
 }
 
 #endif

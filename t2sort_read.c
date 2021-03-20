@@ -26,7 +26,7 @@ void * t2sort_readraw(t2sort_t *h, int *ntr)
 {
     h->done.next->ma  += h->nfly*h->trln;
     h->done.next->ntr -= h->nfly;
-
+    //dbg_wait(h, __func__);
     if(h->done.next->ntr==0 && h->done.next!=&h->done)
         xque_deque(&h->done);
     //make sure submit not overrun on buffers

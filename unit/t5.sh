@@ -11,12 +11,14 @@ if [ ! -f unit5 ]; then
     exit
 fi
 
-dio=0
+dio=1
 chk=1
 for buff in 60 160 260 660; do
+#for buff in {60..660..20}; do
     for wioq in 4 5 6 7 9; do
+    #for wioq in {3..11}; do
         echo "./unit5 1223 $buff $wioq gendata2.dat xsort1.dat $dio $chk"
-        ./unit5 1223 $buff $wioq gendata2.dat xsort1.dat $dio $chk
+        time ./unit5 1223 $buff $wioq gendata2.dat xsort1.dat $dio $chk
         if [ $? -ne 0 ]; then
             echo "Unit test error, exit..."
             exit
