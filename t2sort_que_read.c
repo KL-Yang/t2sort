@@ -1,3 +1,5 @@
+#ifndef C_T2SORT_ALIGN_T2SORT
+#define C_T2SORT_ALIGN_T2SORT
 /**
  *       ma                                  mz
  *        |f-------------------------------n->|
@@ -5,19 +7,31 @@
  *        --|---------|---------|---------|----=====|
  *       ext0            page              ext1     ^ xbase
  * */
-static int t2_ext0(int64_t addr)
-{   return (PAGE_SIZE-addr%PAGE_SIZE)%PAGE_SIZE; }
+static int t2_ext0(int64_t addr, int64_t *base, int ext1, int64_t wrap)
+{   
+    if((*base)%wrap==0) //update dummy ext1 value!
+        ext1=PAGE_SIZE;
+    int ext0=(PAGE_SIZE-addr%PAGE_SIZE)%PAGE_SIZE;
+    if((ext0+ext1>PAGE_SIZE)) {
+        *base += PAGE_SIZE; //extra gap
+        if((*base)%wrap==0 && ext0>0)   //boundary!
+            *base += PAGE_SIZE;
+    }
+    return ext0;
+}
 static int t2_ext1(int64_t addr)
 {   return (addr-1)%PAGE_SIZE+1; }
 
-static int t2_rcap(int64_t *xb, int ftr, int trln, int64_t wrap)
+static int t2_rcap(int64_t *xb, int ext0, int trln, int64_t wrap)
 {   
-    int ncap, size, mgap;
-    mgap = (ftr*trln)%PAGE_SIZE;
-    size = wrap-(*xb)%wrap-mgap;
+    int ncap, size;
+    //mgap = (ftr*trln)%PAGE_SIZE;
+    size = wrap-(*xb)%wrap+ext0;
     if((ncap=size/trln)<=0) {
         *xb += (wrap-(*xb)%wrap)%wrap;
-        ncap = t2_rcap(xb, ftr, trln, wrap);
+        if(ext0>0)
+            *xb += PAGE_SIZE;
+        ncap = t2_rcap(xb, ext0, trln, wrap);
     } assert(ncap>0);
     return ncap;
 }
@@ -46,16 +60,17 @@ t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln,
                 memset(&xque[x], 0, sizeof(t2_que_t));
                 xque[x].blk  = i;
                 xque[x].seek = i*bntr+f[i];
-                ext0 = t2_ext0(f[i]*trln);
-                ncap = t2_rcap(&xbase, f[i], trln, xwrap);
+                ext0 = t2_ext0(f[i]*trln, &xbase, ext1, xwrap);
+                if(ext0) assert(xbase%xwrap!=0);
+                ncap = t2_rcap(&xbase, ext0, trln, xwrap);
+                if(ext0) assert(xbase%xwrap!=0);
                 xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
                 xque[x].Ma  = xbase; //one page gap
-                if(ext1+ext0>PAGE_SIZE || ((xbase%xwrap==0)&&ext0>0))
-                    xque[x].Ma += PAGE_SIZE;
                 xque[x].ma  = xque[x].Ma-ext0;
                 xque[x].mz  = xque[x].ma+xque[x].ntr*trln;
                 ext1 = t2_ext1(xque[x].mz);
-                xque[x].Mz = xque[x].mz-ext1+PAGE_SIZE;
+                xque[x].Mz  = xque[x].mz-ext1+PAGE_SIZE;
+
                 xbase = xque[x].Mz;
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
@@ -96,3 +111,4 @@ static void t2_read_submit(t2sort_t *h, t2_que_t *r)
         xque_enque(&h->wait, x);
     }
 }
+#endif
