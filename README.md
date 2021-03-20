@@ -28,3 +28,14 @@ Now: gradually abandon C++ code.
 It's interesting on some old Linux distribution std::sort() seems much faster than qsort,
 but on Debian 10, seems C99 qsort is faster instead? Make me doubt performance of C++ template.
 Will further evaluate, but anyway it's not a big issue here.
+
+TODO.
+=========
+Use new abstraction, memory management on a ring buffer, allocation on the ring buffer, 
+and return to the ring buffer in the same order!
+It garrantee continuous memory region, and aligned if required.
+ring_malloc()
+ring_return()
+ring_aalloc(int *ntr, int trln, [int ext1,] int ext0)
+note ext1 will be tracked by ring buffer itself! user only provide ntr and missalignment at begining.
+

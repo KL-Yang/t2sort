@@ -48,10 +48,24 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
     }
 }
 
+//#include "t2sort_ring.c"
+static int64_t
+xring_ralign(int64_t *base, int fi, int trln, int *ntr, 
+    int *ext0, int *ext1, int64_t xwrap)
+{
+    *ext0 = t2_ext0(fi*trln, base, *ext1,  xwrap);
+    int ncap = t2_rcap(base, *ext0, trln, xwrap);
+    *ntr = MIN((*ntr), ncap);
+    int64_t mz  = (*base)-(*ext0)+(*ntr)*trln;
+    *ext1 = t2_ext1(mz);
+    return (*base);
+}
+
 static int
 t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln, 
     int pntr, int xwrap) 
 {
+    //t2_ring_t *ring = ring_init(trln, xwrap/trln);
     int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
     for(int j=0, ext0=0, ext1=0; j<nblk; j++, n+=nblk)
@@ -60,6 +74,7 @@ t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln,
                 memset(&xque[x], 0, sizeof(t2_que_t));
                 xque[x].blk  = i;
                 xque[x].seek = i*bntr+f[i];
+                /*
                 ext0 = t2_ext0(f[i]*trln, &xbase, ext1, xwrap);
                 if(ext0) assert(xbase%xwrap!=0);
                 ncap = t2_rcap(&xbase, ext0, trln, xwrap);
@@ -70,6 +85,13 @@ t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln,
                 xque[x].mz  = xque[x].ma+xque[x].ntr*trln;
                 ext1 = t2_ext1(xque[x].mz);
                 xque[x].Mz  = xque[x].mz-ext1+PAGE_SIZE;
+                */
+                int xtr = MIN(pntr, n[i]);
+                xque[x].Ma  = xring_ralign(&xbase, f[i], trln, &xtr, &ext0, &ext1, xwrap);
+                xque[x].ma  = xque[x].Ma-ext0;
+                xque[x].mz  = xque[x].ma+xtr*trln;
+                xque[x].Mz  = xque[x].mz-ext1+PAGE_SIZE;
+                xque[x].ntr = xtr;
 
                 xbase = xque[x].Mz;
                 f[i] += xque[x].ntr;
