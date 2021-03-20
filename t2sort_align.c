@@ -8,12 +8,12 @@
  *       ext0            page              ext1     ^ xbase
  * */
 static int t2_ext0(int64_t addr, int64_t *base, int ext1, int64_t wrap)
-{   
+{
     if((*base)%wrap==0) //update dummy ext1 value!
         ext1=PAGE_SIZE;
     int ext0=(PAGE_SIZE-addr%PAGE_SIZE)%PAGE_SIZE;
     if((ext0+ext1>PAGE_SIZE)) {
-        *base += PAGE_SIZE; //extra gap
+        *base += PAGE_SIZE;     //extra gap
         if((*base)%wrap==0 && ext0>0)   //boundary!
             *base += PAGE_SIZE;
     }
@@ -25,7 +25,6 @@ static int t2_ext1(int64_t addr)
 static int t2_rcap(int64_t *xb, int ext0, int trln, int64_t wrap)
 {   
     int ncap, size;
-    //mgap = (ftr*trln)%PAGE_SIZE;
     size = wrap-(*xb)%wrap+ext0;
     if((ncap=size/trln)<=0) {
         *xb += (wrap-(*xb)%wrap)%wrap;
@@ -48,10 +47,9 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
     }
 }
 
-//#include "t2sort_ring.c"
 static int64_t
-xring_ralign(int64_t *base, int fi, int trln, int *ntr, 
-    int *ext0, int *ext1, int64_t xwrap)
+t2_align(int64_t *base, int fi, int trln, int *ntr, int *ext0, 
+        int *ext1, int64_t xwrap)
 {
     *ext0 = t2_ext0(fi*trln, base, *ext1,  xwrap);
     int ncap = t2_rcap(base, *ext0, trln, xwrap);
@@ -65,34 +63,19 @@ static int
 t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln, 
     int pntr, int xwrap) 
 {
-    //t2_ring_t *ring = ring_init(trln, xwrap/trln);
     int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
     for(int j=0, ext0=0, ext1=0; j<nblk; j++, n+=nblk)
-        for(int i=0, ncap=0; i<nblk; i++)
+        for(int i=0; i<nblk; i++)
             while(n[i]!=0) {
                 memset(&xque[x], 0, sizeof(t2_que_t));
                 xque[x].blk  = i;
                 xque[x].seek = i*bntr+f[i];
-                /*
-                ext0 = t2_ext0(f[i]*trln, &xbase, ext1, xwrap);
-                if(ext0) assert(xbase%xwrap!=0);
-                ncap = t2_rcap(&xbase, ext0, trln, xwrap);
-                if(ext0) assert(xbase%xwrap!=0);
-                xque[x].ntr = MIN(ncap, MIN(pntr, n[i]));
-                xque[x].Ma  = xbase; //one page gap
+                xque[x].ntr  = MIN(pntr, n[i]);
+                xque[x].Ma  = t2_align(&xbase, f[i], trln, &xque[x].ntr, &ext0, &ext1, xwrap);
                 xque[x].ma  = xque[x].Ma-ext0;
                 xque[x].mz  = xque[x].ma+xque[x].ntr*trln;
-                ext1 = t2_ext1(xque[x].mz);
                 xque[x].Mz  = xque[x].mz-ext1+PAGE_SIZE;
-                */
-                int xtr = MIN(pntr, n[i]);
-                xque[x].Ma  = xring_ralign(&xbase, f[i], trln, &xtr, &ext0, &ext1, xwrap);
-                xque[x].ma  = xque[x].Ma-ext0;
-                xque[x].mz  = xque[x].ma+xtr*trln;
-                xque[x].Mz  = xque[x].mz-ext1+PAGE_SIZE;
-                xque[x].ntr = xtr;
-
                 xbase = xque[x].Mz;
                 f[i] += xque[x].ntr;
                 n[i] -= xque[x].ntr;
