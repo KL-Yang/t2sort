@@ -1,15 +1,5 @@
-/*
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-*/
-#include "../t2sort_i.h"
+#include "common.h"
+#include "../t2sort_debug.c"
 
 static int gen_key(int kmin, int kmax)
 {
