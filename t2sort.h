@@ -2,6 +2,7 @@
 #define H_T2SORT_T2SORT
 
 #define T2SORT_DIO      (1<<0)
+#define T2SORT_DEBUG	(1<<2)
 
 typedef struct t2sort_struct * t2sort_h;
 
