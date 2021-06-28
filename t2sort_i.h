@@ -3,6 +3,7 @@
 
 #include <aio.h>
 #include <math.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

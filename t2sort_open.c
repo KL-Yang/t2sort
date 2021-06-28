@@ -1,6 +1,27 @@
 #ifndef C_T2SORT_OPEN_T2SORT
 #define C_T2SORT_OPEN_T2SORT
 
+#define LEN_PATH    128
+static void t2_scratchname(const char *seed, char *name)
+{
+    char temp[LEN_PATH];
+    time_t t1; struct tm t2; pid_t pid;
+    t1 = time(NULL);
+    gmtime_r(&t1, &t2);
+    pid = getpid();
+    snprintf(temp, LEN_PATH, "%s_%02d%02d%02d%02d%02d_%u.delete",
+        seed, t2.tm_mon+1, t2.tm_mday, t2.tm_hour, t2.tm_min, 
+        t2.tm_sec, pid);
+    const char *scrdir=getenv("T2SORT_SCRATCH");
+    if(scrdir!=NULL) {
+        strcpy(name, scrdir);
+        int n=strlen(scrdir);
+        if(name[n-1]!='/')
+            strcat(name, "/");
+    }
+    strcat(name, temp);
+}
+
 static void t2_factor(int a, int * restrict f)
 {
     while(a!=1) {
@@ -49,7 +70,7 @@ static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 }
 static void t2_init_scratch(t2sort_t *h, int flag)
 {
-    strcpy(h->fd_name, "delete_d_XXXXXX");
+    /*strcpy(h->fd_name, "delete_d_XXXXXX");
     mkstemp(h->fd_name);
     char scratchname_k[128]; strcpy(scratchname_k, "delete_k_XXXXXX");
     mkstemp(scratchname_k);
@@ -60,7 +81,10 @@ static void t2_init_scratch(t2sort_t *h, int flag)
 	strcpy(h->fd_name, temp);
 	snprintf(temp, 140, "%s/%s", scrdir, scratchname_k);
 	strcpy(scratchname_k, temp);
-    }
+    } */
+    char scratchname_k[128];
+    t2_scratchname("delete_data", h->fd_name);
+    t2_scratchname("delete_head", scratchname_k);
     printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
             h->fd_name, scratchname_k);
     int oflag = (flag&T2SORT_DIO)?(O_DIRECT):(0);
