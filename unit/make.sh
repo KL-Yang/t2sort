@@ -30,14 +30,6 @@ time ./unit2 50000000 2
 #c99 qsort is faster
 exit
 
-########## unit test-1
-gcc -c $flag unit1_map.c 
-gcc $flag -o unit1_map unit1_map.o -lm
-for ninst in {2001..10000..1333}; do
-    for trlen in {1120..6666..400}; do
-        ./unit1_map $trlen $ninst
-    done
-done
 
 gcc $flag unit5_test1.c -o unit5_test1 -lm ../t2sort.o
 ./unit5_test1
