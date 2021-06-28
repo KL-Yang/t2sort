@@ -70,18 +70,6 @@ static void t2_init_blk(t2sort_t *h, int bsiz, int wioq, int trln)
 }
 static void t2_init_scratch(t2sort_t *h, int flag)
 {
-    /*strcpy(h->fd_name, "delete_d_XXXXXX");
-    mkstemp(h->fd_name);
-    char scratchname_k[128]; strcpy(scratchname_k, "delete_k_XXXXXX");
-    mkstemp(scratchname_k);
-    const char *scrdir = getenv("T2SORT_SCRATCH");
-    if(scrdir!=NULL) {
-        char temp[140];
-	snprintf(temp, 140, "%s/%s", scrdir, h->fd_name);
-	strcpy(h->fd_name, temp);
-	snprintf(temp, 140, "%s/%s", scrdir, scratchname_k);
-	strcpy(scratchname_k, temp);
-    } */
     char scratchname_k[128];
     t2_scratchname("delete_data", h->fd_name);
     t2_scratchname("delete_head", scratchname_k);
