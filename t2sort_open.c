@@ -56,8 +56,16 @@ static void t2_init_scratch(t2sort_t *h, int flag)
 {
     strcpy(h->fd_name, "delete_d_XXXXXX");
     mkstemp(h->fd_name);
-    char scratchname_k[]="delete_k_XXXXXX";
+    char scratchname_k[128]; strcpy(scratchname_k, "delete_k_XXXXXX");
     mkstemp(scratchname_k);
+    const char *scrdir = getenv("T2SORT_SCRATCH");
+    if(scrdir!=NULL) {
+        char temp[140];
+	snprintf(temp, 140, "%s/%s", scrdir, h->fd_name);
+	strcpy(h->fd_name, temp);
+	snprintf(temp, 140, "%s/%s", scrdir, scratchname_k);
+	strcpy(scratchname_k, temp);
+    }
     printf("%s: open scratch (dat=%s, key=%s)\n", __func__, 
             h->fd_name, scratchname_k);
     int oflag = (flag&T2SORT_DIO)?(O_DIRECT):(0);
@@ -65,6 +73,10 @@ static void t2_init_scratch(t2sort_t *h, int flag)
             S_IRWXU|S_IRWXG|S_IRWXO);
     h->fd_keys = open(scratchname_k, O_RDWR|O_CREAT, 
                     S_IRWXU|S_IRWXG|S_IRWXO);
+    if(!(flag & T2SORT_DEBUG)) {
+        remove(h->fd_name);
+        remove(scratchname_k);
+    }
 }
 
 t2sort_h

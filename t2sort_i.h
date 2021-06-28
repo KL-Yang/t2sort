@@ -57,7 +57,7 @@ typedef struct t2sort_struct {
     int         ndef;       //number of key definition
     int         klen;       //key struct length
     int         flag;
-    char        fd_name[64];
+    char        fd_name[128];
     int         nblk;       //disk block count
     int64_t     nkey;       //Total ntr count
     int64_t     bntr;       //ntr per block
