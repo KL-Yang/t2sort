@@ -56,7 +56,7 @@ void dbg_rque_print(t2_que_t *stub, int trln, int xwrap)
         xsum += xhead->ntr;
         xhead = xhead->next;
     }
-    printf("%s:total rque ntr=%d\n", __func__, xsum);
+    printf("%s:total rque ntr=%d, trln=%d\n", __func__, xsum, trln);
     t2_que_t *item=stub->next;
     while(item!=stub) {
         printf("%4d BLK[%2d] NTR=%5d [%16ld,%16ld] [%16ld,%16ld] seek=%8ld\n",

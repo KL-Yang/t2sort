@@ -37,11 +37,12 @@ static int t2_rcap(int64_t *xb, int ext0, int trln, int64_t wrap)
 
 static void //count the block-block contribution
 t2_scan(const void *pkey, int nkey, int klen, int bntr,
-    int nblk, int *nn)
+    int nblk, int * restrict nn)
 {
     memset(nn, 0, nblk*nblk*sizeof(int));
     for(int i=0, xntr; i<nkey; i+=bntr, nn+=nblk) {
         xntr = MIN(bntr, nkey-i);
+#pragma GCC ivdep
         for(int j=0; j<xntr; j++, pkey+=klen)
             nn[((t2_pay_t*)pkey)->bpi.blk]++;
     }
@@ -60,8 +61,8 @@ t2_align(int64_t *base, int fi, int trln, int *ntr, int *ext0,
 }
 
 static int
-t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln, 
-    int pntr, int xwrap) 
+t2_lque(t2_que_t * restrict xque, int * restrict n, int nblk, 
+        int bntr, int trln, int pntr, int xwrap) 
 {
     int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
@@ -85,9 +86,9 @@ t2_lque(t2_que_t *xque, int *n, int nblk, int bntr, int trln,
 }
 
 static t2_que_t *
-t2_rque(t2_que_t *pool, t2_que_t *list, int nque) 
+t2_rque(t2_que_t *pool, t2_que_t * restrict list, int nque) 
 {
-    t2_que_t *xque = calloc(nque, sizeof(t2_que_t));
+    t2_que_t * restrict xque = calloc(nque, sizeof(t2_que_t));
     memcpy(xque, list, nque*sizeof(t2_que_t));
     for(int i=0; i<nque; i++) {
         xque[i].id = i;

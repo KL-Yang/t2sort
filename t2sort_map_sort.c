@@ -8,7 +8,8 @@
  * @param swap : temporial buffer for sorting
  * */
 static void
-t2sort_map_sort(void **p, int n, int *m, int len, void *swap)
+t2sort_map_sort(void * restrict * p, int n, int * restrict m, int len, 
+        void * restrict swap)
 {
     for(register int i=0; i<n; /*no action*/ ) {
         while(i<n && m[i]==i)

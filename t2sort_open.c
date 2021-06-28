@@ -1,7 +1,7 @@
 #ifndef C_T2SORT_OPEN_T2SORT
 #define C_T2SORT_OPEN_T2SORT
 
-static void t2_factor(int a, int *f)
+static void t2_factor(int a, int * restrict f)
 {
     while(a!=1) {
         for(int i=2, j=0; i<=a; i++)
