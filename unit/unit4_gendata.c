@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     srandom(rseed);
     buf = calloc(batch, trlen);
-    fdd = open(fname, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    fdd = open(fname, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     for(int i=0, j=0, ngen; i<ninst; i+=batch, j++) {
         ngen = MIN(batch, ninst-i);
         printf("write batch[%02d]=%d\n", j, ngen);

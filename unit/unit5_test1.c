@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     sort = t2sort_open(trlen, 2, kdef, bsize, npile, flag);
 
     fdi = open(fname, O_RDWR);
-    fdo = open(fsort, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    fdo = open(fsort, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     assert(fdi>=0 && fdo>=0);
 
     buf = calloc(batch, trlen);
