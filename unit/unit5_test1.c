@@ -2,13 +2,31 @@
 #include "../t2sort.h"
 #include "../gentype_gen.h"
 
+static ssize_t safe_pread(int fd, void *buf, size_t count, off_t offset)
+{
+    size_t left=count, batch=256*1024*1024; //256MB
+    while(left>0) {
+        ssize_t r = MIN(left, batch);
+        ssize_t x = pread(fd, buf, r, offset);
+        if(x<0) {
+            printf("%s: something wrong with reading file\n", __func__);
+            abort();
+        }
+        buf += x;
+        offset += x;
+        left -= x;
+    };
+    return count;
+}
+
 void check_file_order(int fd, int trlen, t2sort_key_def_t *kdef)
 {
-    void *buff; int ninst;
+    void *buff; int64_t ninst;
     off_t length = lseek(fd, 0, SEEK_END);
     ninst = length/trlen;  assert(length%trlen==0);
     buff  = calloc(ninst, trlen);
-    pread(fd, buff, ninst*trlen, 0);
+    ssize_t x = safe_pread(fd, buff, ninst*trlen, 0);
+    assert(x==ninst*trlen);
     dbg_keys_valid(buff, ninst, trlen, 
             kdef[0].offset, kdef[1].offset);
     dbg_data_valid(buff, ninst, trlen, 
