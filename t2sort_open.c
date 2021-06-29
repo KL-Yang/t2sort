@@ -25,6 +25,7 @@ static void t2_scratchname(const char *seed, char *name)
         seed, t2.tm_mon+1, t2.tm_mday, t2.tm_hour, t2.tm_min, 
         t2.tm_sec, pid);
     const char *scrdir=getenv("T2SORT_SCRATCH");
+    name[0]='\0';
     if(scrdir!=NULL) {
         strcpy(name, scrdir);
         int n=strlen(scrdir);
