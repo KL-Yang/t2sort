@@ -19,13 +19,13 @@ static void t2_list_keys(t2sort_t *h, int nsort)
 
 static void t2_sort_block(t2sort_t *h, void *pkey, int nkey) 
 {
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int64_t i=0; i<nkey; i++) {
         h->_pptr[i] = ((t2_pay_t*)(pkey+i*h->klen))->ptr;
         ((t2_pay_t*)(pkey+i*h->klen))->idx = i;
     }
     qsort(pkey, nkey, h->klen, h->func_cmp_key);
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int64_t i=0; i<nkey; i++)
         h->_imap[i] = ((t2_pay_t*)(pkey+i*h->klen))->idx;
     t2sort_map_sort(h->_pptr, nkey, h->_imap, h->trln, h->_temp);
@@ -35,7 +35,7 @@ static void t2_flush_block(t2sort_t *h, int nsort)
 {
     t2_list_keys(h, nsort);
     t2_sort_block(h, h->_pkey, nsort);
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int i=0; i<nsort; i++) {
         ((t2_pay_t*)(h->_pkey+i*h->klen))->bpi.blk = h->nblk;
         ((t2_pay_t*)(h->_pkey+i*h->klen))->bpi.idx = i;

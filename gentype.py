@@ -37,7 +37,7 @@ static int cmp_{t1}_{t2}_{t3}(const void *p1, const void *p2) {{
 """
 type1_cpy = """
 static void cpy_{t1}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
         t2sort_{t1}_t * restrict k = pk;
@@ -46,7 +46,7 @@ static void cpy_{t1}(void * restrict p, int l, int n, const t2sort_key_def_t *kd
 """
 type2_cpy = """
 static void cpy_{t1}_{t2}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
         {t2} * restrict k2 = ({t2} *)(p+kd[1].offset);
@@ -56,7 +56,7 @@ static void cpy_{t1}_{t2}(void * restrict p, int l, int n, const t2sort_key_def_
 """
 type3_cpy = """
 static void cpy_{t1}_{t2}_{t3}(void * restrict p, int l, int n, const t2sort_key_def_t *kd, void * restrict pk) {{
-#pragma GCC ivdep
+//#pragma GCC ivdep
     for(int i=0; i<n; i++, p+=l) {{
         {t1} * restrict k1 = ({t1} *)(p+kd[0].offset);
         {t2} * restrict k2 = ({t2} *)(p+kd[1].offset);

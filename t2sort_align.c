@@ -42,7 +42,7 @@ t2_scan(const void *pkey, int nkey, int klen, int bntr,
     memset(nn, 0, nblk*nblk*sizeof(int));
     for(int i=0, xntr; i<nkey; i+=bntr, nn+=nblk) {
         xntr = MIN(bntr, nkey-i);
-#pragma GCC ivdep
+//#pragma GCC ivdep
         for(int j=0; j<xntr; j++, pkey+=klen)
             nn[((t2_pay_t*)pkey)->bpi.blk]++;
     }
