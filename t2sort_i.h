@@ -56,7 +56,7 @@ struct t2sort_que_struct {
 typedef struct t2sort_struct {
     int         fd;         //data file
     int         fd_keys;    //keys file, not used yet
-    int         trln;       //trace length in byte
+    int64_t     trln;       //trace length in byte
     int         wioq;       //nppb, Number of Piles Per Block, TODO: rename
     t2_kdef_t * kdef;       //key definition
     int         ndef;       //number of key definition
