@@ -24,7 +24,7 @@ static int t2_ext1(int64_t addr)
 
 static int t2_rcap(int64_t *xb, int ext0, int trln, int64_t wrap)
 {   
-    int ncap, size;
+    int ncap; int64_t size;
     size = wrap-(*xb)%wrap+ext0;
     if((ncap=size/trln)<=0) {
         *xb += (wrap-(*xb)%wrap)%wrap;
@@ -62,7 +62,7 @@ t2_align(int64_t *base, int fi, int trln, int *ntr, int *ext0,
 
 static int
 t2_lque(t2_que_t * restrict xque, int * restrict n, int nblk, 
-        int bntr, int trln, int pntr, int xwrap) 
+        int bntr, int trln, int pntr, int64_t xwrap) 
 {
     int f[nblk], x=0; int64_t xbase=0;
     memset(f, 0, nblk*sizeof(int));
