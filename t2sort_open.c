@@ -36,8 +36,9 @@ static void t2_scratchname(const char *seed, char *name)
 
 static void t2_factor(int a, int * restrict f)
 {
+    int j=0;
     while(a!=1) {
-        for(int i=2, j=0; i<=a; i++)
+        for(int i=2; i<=a; i++)
             if(a%i==0) {
                 a=a/i;
                 f[j]=i;
