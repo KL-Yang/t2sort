@@ -17,11 +17,6 @@ gcc $flag unit4_gendata.c -o unit4 -lm
 ./unit4 1223 100231 111 gendata2.dat
 exit
 
-########## unit test-3
-gcc $flag -Wno-unused-function unit3_type.c -o unit3
-./unit3
-exit
-
 ########## unit test-2
 g++ $flag -Wno-pointer-arith unit2_sort.cpp -o unit2
 time ./unit2 50000000 0
