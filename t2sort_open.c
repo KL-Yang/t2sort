@@ -1,6 +1,18 @@
 #ifndef C_T2SORT_OPEN_T2SORT
 #define C_T2SORT_OPEN_T2SORT
 
+#ifdef T2SORT_RHEL6 //For rhel6, aligned_alloc(C11)
+static void * aligned_alloc(size_t alignment, size_t size)
+{
+    void *p = malloc(size);
+    if(posix_memalign(&p, alignment, size)!=0) {
+        printf("%s(%lu, %lu) Failed!\n", __func__, alignment, size);
+        abort();
+    }
+    return p;
+}
+#endif
+
 #define LEN_PATH    128
 static void t2_scratchname(const char *seed, char *name)
 {

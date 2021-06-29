@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-flag="-W -Wall -O0 -ggdb -D_GNU_SOURCE"
+flag="-W -Wall -O0 -ggdb -D_GNU_SOURCE -std=gnu99"
 python3 gentype.py header > gentype_gen.h
 python3 gentype.py > gentype_gen.c
 gcc -c $flag t2sort.c -fPIC
