@@ -9,7 +9,9 @@ static ssize_t safe_pread(int fd, void *buf, size_t count, off_t offset)
         ssize_t r = MIN(left, batch);
         ssize_t x = pread(fd, buf, r, offset);
         if(x<0) {
+    	    int e = errno;
             printf("%s: something wrong with reading file\n", __func__);
+            printf("%s: errno=%d %s\n", __func__, e, strerror(e));
             abort();
         }
         buf += x;
@@ -21,19 +23,20 @@ static ssize_t safe_pread(int fd, void *buf, size_t count, off_t offset)
 
 void check_file_order(int fd, int trlen, t2sort_key_def_t *kdef)
 {
-    void *buff; int64_t ninst;
+    void *wbuff; int64_t ninst, batch=1000;
     off_t length = lseek(fd, 0, SEEK_END);
     ninst = length/trlen;  assert(length%trlen==0);
-    buff  = calloc(ninst, trlen);
-    ssize_t x = safe_pread(fd, buff, ninst*trlen, 0);
-    assert(x==ninst*trlen);
-    dbg_keys_valid(buff, ninst, trlen, 
-            kdef[0].offset, kdef[1].offset);
-    dbg_data_valid(buff, ninst, trlen, 
-            kdef[0].offset, kdef[1].offset);
-    //dbg_keys_print(buff, ninst, trlen, 
-    //        kdef[0].offset, kdef[1].offset);
-    free(buff);
+    wbuff  = calloc(batch, trlen);
+    
+    for(int64_t i=0; i<ninst; i+=batch-1) {
+        int64_t r = MIN(batch, ninst-i);
+        ssize_t x = safe_pread(fd, wbuff, r*trlen, i*trlen);
+        assert(x==r*trlen);
+	dbg_keys_valid(wbuff, r, trlen, kdef[0].offset, kdef[1].offset);
+	dbg_data_valid(wbuff, r, trlen, kdef[0].offset, kdef[1].offset);
+      //dbg_keys_print(wbuff, r, trlen, kdef[0].offset, kdef[1].offset);
+    };
+    free(wbuff);
     printf("%s() done!\n", __func__);
 }
 
