@@ -127,12 +127,14 @@ void dbg_blocks_check(t2sort_t *h)
     int bntr = h->bntr;
     void *buff = malloc(bntr*h->trln);
     void *pkey = malloc(bntr*h->klen);
+    int fd = open(h->fd_name, O_RDONLY);
     for(int64_t i=0, n; i<h->nkey; i+=bntr) {
         n = MIN(bntr, h->nkey-i);
-        pread(h->fd, buff, n*h->trln, i*h->trln);
+        pread(fd, buff, n*h->trln, i*h->trln);
         h->func_cpy_key(buff, h->trln, n, h->kdef, pkey);
         dbg_ablock_check(h, buff, n);
     }
+    close(fd);
     free(buff);
     free(pkey);
 }
