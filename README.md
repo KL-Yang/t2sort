@@ -31,6 +31,9 @@ Will further evaluate, but anyway it's not a big issue here.
 
 TODO.
 =========
+Test scheme: If assume the correct result is unique and wrong result will be wrong differently, 
+test with different parameter the result's md5sum should be the same if code is correct!
+
 Use new abstraction, memory management on a ring buffer, allocation on the ring buffer, 
 and return to the ring buffer in the same order!
 It garrantee continuous memory region, and aligned if required.
